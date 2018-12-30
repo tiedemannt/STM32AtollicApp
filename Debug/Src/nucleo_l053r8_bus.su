@@ -1,0 +1,7 @@
+nucleo_l053r8_bus.c:140:9:BSP_SPI1_DeInit	8	static
+nucleo_l053r8_bus.c:160:9:BSP_SPI1_Send	8	static
+nucleo_l053r8_bus.c:177:10:BSP_SPI1_Recv	8	static
+nucleo_l053r8_bus.c:194:9:BSP_SPI1_SendRecv	16	static
+nucleo_l053r8_bus.c:263:9:BSP_GetTick	8	static
+nucleo_l053r8_bus.c:269:26:MX_SPI1_Init	8	static
+nucleo_l053r8_bus.c:106:9:BSP_SPI1_Init	48	static

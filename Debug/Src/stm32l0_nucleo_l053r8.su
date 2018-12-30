@@ -1,0 +1,17 @@
+stm32l0_nucleo_l053r8.c:140:9:BSP_GetVersion	0	static
+stm32l0_nucleo_l053r8.c:155:9:BSP_LED_Init	40	static
+stm32l0_nucleo_l053r8.c:186:9:BSP_LED_DeInit	8	static
+stm32l0_nucleo_l053r8.c:210:9:BSP_LED_On	8	static
+stm32l0_nucleo_l053r8.c:227:9:BSP_LED_Off	8	static
+stm32l0_nucleo_l053r8.c:244:9:BSP_LED_Toggle	8	static
+stm32l0_nucleo_l053r8.c:261:9:BSP_LED_GetState	8	static
+stm32l0_nucleo_l053r8.c:277:9:BSP_PB_Init	40	static
+stm32l0_nucleo_l053r8.c:324:9:BSP_PB_DeInit	8	static
+stm32l0_nucleo_l053r8.c:342:9:BSP_PB_GetState	8	static
+stm32l0_nucleo_l053r8.c:361:13:BSP_PB_Callback	0	static
+stm32l0_nucleo_l053r8.c:351:13:BUTTON_KEY_EXTI_Callback	8	static
+stm32l0_nucleo_l053r8.c:403:9:BSP_COM_DeInit	16	static
+stm32l0_nucleo_l053r8.c:431:26:MX_USART2_UART_Init	8	static
+stm32l0_nucleo_l053r8.c:377:9:BSP_COM_Init	40	static
+stm32l0_nucleo_l053r8.c:568:9:BSP_COM_SelectLogPort	0	static
+stm32l0_nucleo_l053r8.c:578:6:__io_putchar	16	static

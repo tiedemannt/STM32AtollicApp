@@ -1,0 +1,11 @@
+lgs_bluetooth.c:220:6:LGS_SetAddress	16	static
+lgs_bluetooth.c:285:12:LGS_UpdateStackData	16	static
+lgs_bluetooth.c:352:6:LGS_SetDiscoverableMode	88	static
+lgs_bluetooth.c:238:6:LGS_Process	8	static
+lgs_bluetooth.c:211:6:LGS_BLE_Process	8	static
+lgs_bluetooth.c:414:12:LGS_AddEnvironmentService	48	static
+lgs_bluetooth.c:133:6:LGS_BLE_Init	40	static
+lgs_bluetooth.c:619:6:GAP_DisconnectionComplete_CB	0	static
+lgs_bluetooth.c:634:6:GAP_ConnectionComplete_CB	0	static
+lgs_bluetooth.c:653:6:Read_Request_CB	8	static
+lgs_bluetooth.c:563:6:LGS_UserNotify	8	static
