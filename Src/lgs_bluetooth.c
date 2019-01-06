@@ -49,38 +49,40 @@ do {\
                 uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
 
+//Data Object Bluetooth Data
+s_environmentData m_environmentData;
 
-/**
- * Data
- */
-//Sensor Data; save as struct
-struct s_environmentData
-{
-	uint8_t 	m_environmentBright; 		//Flag; Gibt an ob Umgebung hell (=1) oder dunkel (=0) ist
-	int8_t  	m_environmentTemperature;	//Temperatur; Gemessen in [1]°C
-	uint16_t 	m_environmentVOC;			//Volatile Organic Compound; Gemessen in [1]PPB
-	uint16_t	m_environmentCO2;			//CO2; Gemessen in [1]PPM
-	uint8_t		m_environmentAirHumidity;	//Luftfeuchte; Gemessen in [1]%
-	uint16_t	m_environmentAirPressure;	//Luftdruck; gemessen in [1]mBar
-} m_environmentData;
-
-//Handles, save as a struct
+//Handles, saved as a struct
 struct s_handles
 {
 	//Service Handles
 	uint16_t	m_gapServiceHandle;				//Service Handle GAP
+	//--
 	uint16_t 	m_environmentServiceHandle;		//Service Handle Environment
+	uint16_t	m_configurationServiceHandle;	//Service Handle Configuration
 
-	//Characteristic Handles
+	//Characteristic Data Handles
 	uint16_t    m_deviceNameCharHandle;			//Characteristic Handle Device Name
 	uint16_t	m_appearanceCharHandle;			//Characteristic Handle Apperance
+	//--
 	uint16_t 	m_environmentCharBrightHandle;	//Characteristic Handle Bright Flag
 	uint16_t 	m_environmentCharTempHandle;	//Characteristic Handle Temperature
 	uint16_t 	m_environmentCharVOCHandle;		//Characteristic Handle VOC
 	uint16_t 	m_environmentCharCO2Handle;		//Characteristic Handle CO2
 	uint16_t 	m_environmentCharHumidityHandle;//Characteristic Handle Air Humidity
 	uint16_t 	m_environmentCharPressureHandle;//Characteristic Handle Air Pressure
+
+	//Characteristic Settings Handles
+	uint16_t    m_configurationsRepRateHandle; 	//Characteristic Handle Reprate Setting
+	uint16_t	m_configurationsOutputActive;	//Characteristic Handle Output Flag
+	uint16_t	m_configurationsCriticTemperature; //Characteristic Handle kritische Temperatur
+	uint16_t	m_configurationsCriticVOC;		//Characteristic Handle kritischer VOC Wert
+	uint16_t	m_configurationsCriticCo2;		//Characteristic Handle kritischer CO2 Wert
+	uint16_t	m_configurationsCriticHumidity;	//Characteristic Handle kritische Feuchte
+	uint16_t	m_configurationsCriticPressure;	//Characteristic Handle kritischer Druck
 }m_serviceHandles;
+
+
 
 //General Variables
 uint8_t set_connectable = TRUE;
@@ -89,15 +91,19 @@ int     connected;
 uint8_t  notification_enabled = FALSE;
 uint8_t bnrg_expansion_board = IDB05A1; //IDB5 expansion board
 uint8_t bdaddr[BDADDR_SIZE];
+uint32_t msSinceUpdate = 0;
 
 Service_UUID_t 	service_uuid;
 Char_UUID_t 	char_uuid;
 
 
-//UUID Setter
+//Service UUID
 #define GET_ENVIRONMENT_SERVICE_UUID(uuid_struct)   \
 	COPY_UUID_128(uuid_struct,0x7d,0x36,0xee,0xd5,0xca,0x05,0x42,0xf3,0x86,0x7e,0x4d,0x80,0x0a,0x45,0x9c,0xa1)
+#define GET_CONFIGURATION_SERVICE_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x7d,0x36,0xee,0xd5,0xca,0x05,0x42,0xf3,0x86,0x7e,0x4d,0x80,0x0a,0x45,0x9c,0xa2)
 
+//Daten UUID
 #define GET_ENVIRONMENT_CHAR_BRIGHT_UUID(uuid_struct)   \
 	COPY_UUID_128(uuid_struct,0xc5,0x09,0x56,0xf6,0xcb,0x78,0x48,0x7e,0x95,0x66,0xb8,0x83,0xff,0x3e,0x5d,0x53)
 #define GET_ENVIRONMENT_CHAR_TEMP_UUID(uuid_struct)   \
@@ -111,6 +117,21 @@ Char_UUID_t 	char_uuid;
 #define GET_ENVIRONMENT_CHAR_PRESSURE_UUID(uuid_struct)   \
 	COPY_UUID_128(uuid_struct,0x66,0x6b,0x7e,0x99,0xe9,0x73,0x48,0x60,0x90,0x06,0xc7,0x8c,0xb9,0x5d,0xa5,0xaa)
 
+//Settings UUID
+#define GET_ENVIRONMENT_CHAR_SETTINGS_REPRATE_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x69)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_CRITTEMP_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6a)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_CRITPRES_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6b)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_CRITCO2_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6c)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_CRITHUM_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6d)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_CRITVOC_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6e)
+#define GET_ENVIRONMENT_CHAR_SETTINGS_OUTPUTACT_UUID(uuid_struct)   \
+	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6f)
 
 /**
  * Private function prototypes
@@ -122,6 +143,7 @@ void 		GAP_DisconnectionComplete_CB(void);
 void 		GAP_ConnectionComplete_CB(uint8_t addr[6], uint16_t handle);
 tBleStatus 	LGS_UpdateStackData(void);
 void 		Read_Request_CB(uint16_t handle);
+void 		Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data);
 
 
 
@@ -242,6 +264,7 @@ void LGS_Process(void)
 	{
 		LGS_SetDiscoverableMode();
 		set_connectable = FALSE;
+		LGS_BLE_UpdateDefaultSettings(); //for readonly
 	}
 
 	//Beispielapplikation togglet hier die LED
@@ -271,11 +294,36 @@ void LGS_Process(void)
 		m_environmentData.m_environmentCO2 			= 400 	+ 	((uint64_t)rand()*20)	/RAND_MAX; //400-420 ppm
 		m_environmentData.m_environmentAirHumidity 	= 			((uint64_t)rand()*100)	/RAND_MAX; //0-100 %
 		m_environmentData.m_environmentVOC 			= 20    +	((uint64_t)rand()*200)	/RAND_MAX; //20-220 ppb
+
+		m_environmentData.m_isUpdateAvailable = TRUE;
 #endif
 
-		(void)LGS_UpdateStackData();
-		HAL_Delay(LGS_CYCLIC_SEND_INTERVAL);
+		//Ausgangsansteuerung prüfen
+		if(		(m_environmentData.m_environmentTemperature > m_environmentData.m_criticTemperature)
+			|| 	(m_environmentData.m_environmentVOC 		> m_environmentData.m_criticVOC)
+			|| 	(m_environmentData.m_environmentCO2 		> m_environmentData.m_criticCo2)
+			|| 	(m_environmentData.m_environmentAirHumidity > m_environmentData.m_criticHumidity)
+			|| 	(m_environmentData.m_environmentAirPressure > m_environmentData.m_criticPressure))
+		{
+			m_environmentData.m_outputActive = TRUE;
+		}
+		else
+		{
+			m_environmentData.m_outputActive = FALSE;
+		}
 
+		//Update senden?
+		if((m_environmentData.m_isUpdateAvailable) &&
+				(((uint32_t)m_environmentData.m_repRateBT) * (uint32_t)2000) <= (msSinceUpdate * (uint32_t)2))
+		{
+			LGS_UpdateStackData();
+			m_environmentData.m_isUpdateAvailable = FALSE;
+			msSinceUpdate = 0;
+		}
+
+
+		HAL_Delay(LGS_LOOPINTERVAL);
+		msSinceUpdate += LGS_LOOPINTERVAL;
 	}
 }
 
@@ -340,11 +388,87 @@ tBleStatus LGS_UpdateStackData(void)
 			&m_environmentData.m_environmentVOC);			//const void *  charValue
 	if(status != BLE_STATUS_SUCCESS) goto fail;
 
+	//Output Active Flag:
+	status = aci_gatt_update_char_value(
+			m_serviceHandles.m_configurationServiceHandle, 	//Service Handle
+			m_serviceHandles.m_configurationsOutputActive,	//Characteristic Handle
+			0, 												//Offset
+			2+sizeof(m_environmentData.m_outputActive), 	//LEN
+			&m_environmentData.m_outputActive);				//const void *  charValue
+	if(status != BLE_STATUS_SUCCESS) goto fail;
+
+
 	return BLE_STATUS_SUCCESS;
 
 	fail:
 	  return BLE_STATUS_ERROR;
 }
+
+
+/*
+ * Updated die Settings
+ */
+void LGS_BLE_UpdateDefaultSettings(void)
+{
+	//Reprate:
+	(void)aci_gatt_update_char_value(
+			m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+			m_serviceHandles.m_configurationsRepRateHandle,  			//Characteristic Handle
+			0, 															//Offset
+			2+sizeof(m_environmentData.m_repRateBT), 					//LEN
+			&m_environmentData.m_repRateBT);							//const void *  charValue
+
+	//Critic Temperature:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsCriticTemperature,  		//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_criticTemperature), 			//LEN
+				&m_environmentData.m_criticTemperature);					//const void *  charValue
+
+	//Critic VOC:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsCriticVOC,  				//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_criticVOC), 					//LEN
+				&m_environmentData.m_criticVOC);							//const void *  charValue
+
+	//Critic CO2:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsCriticCo2,  				//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_criticCo2), 					//LEN
+				&m_environmentData.m_criticCo2);							//const void *  charValue
+
+	//Critic Humidity:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsCriticHumidity,  			//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_criticHumidity), 				//LEN
+				&m_environmentData.m_criticHumidity);						//const void *  charValue
+
+	//Critic Pressure:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsCriticPressure,  			//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_criticPressure), 				//LEN
+				&m_environmentData.m_criticPressure);						//const void *  charValue
+
+	//Output Active Flag:
+	(void)aci_gatt_update_char_value(
+				m_serviceHandles.m_configurationServiceHandle, 				//Service Handle
+				m_serviceHandles.m_configurationsOutputActive,  			//Characteristic Handle
+				0, 															//Offset
+				2+sizeof(m_environmentData.m_outputActive), 				//LEN
+				&m_environmentData.m_outputActive);							//const void *  charValue
+
+	m_environmentData.m_isUpdateAvailable = TRUE;
+}
+
 
 /**
  * Setzt das Device in Connectable Mode
@@ -414,7 +538,7 @@ void LGS_SetDiscoverableMode(void)
 tBleStatus LGS_AddEnvironmentService(void)
 {
   tBleStatus ret;
-  int32_t NumberOfRecords=6;
+  int32_t NumberOfRecords=6;		// NUMBER OF RECORDS
   uint8_t uuid[16];
 
   //###################################################################################################################################
@@ -434,14 +558,14 @@ tBleStatus LGS_AddEnvironmentService(void)
   }
 
   //###################################################################################################################################
-  //Add Characteristics to New Service
+  //Add READONLY Characteristics to New Service
   //###################################################################################################################################
 
   //Bright Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_BRIGHT_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
-  ret =  aci_gatt_add_char(m_serviceHandles.m_environmentServiceHandle, //Handle of the service to which the characteristic has to be added.
+  ret =  aci_gatt_add_char(m_serviceHandles.m_environmentServiceHandle,//Handle of the service to which the characteristic has to be added.
 		  UUID_TYPE_128,											//UUID Type: 16/128 bit
 		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
 		  2+sizeof(m_environmentData.m_environmentBright),			//Länge
@@ -455,7 +579,7 @@ tBleStatus LGS_AddEnvironmentService(void)
     goto fail;
   }
 
-  //Temperature Handle
+  //Temperature Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_TEMP_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
@@ -473,7 +597,7 @@ tBleStatus LGS_AddEnvironmentService(void)
 	  goto fail;
   }
 
-  //VOC Handle
+  //VOC Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_VOC_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
@@ -491,7 +615,7 @@ tBleStatus LGS_AddEnvironmentService(void)
 	  goto fail;
   }
 
-  //CO2 Handle
+  //CO2 Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_CO2_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
@@ -509,7 +633,7 @@ tBleStatus LGS_AddEnvironmentService(void)
 	  goto fail;
   }
 
-  //Humidity Handle
+  //Humidity Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_HUMIDITY_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
@@ -527,7 +651,7 @@ tBleStatus LGS_AddEnvironmentService(void)
 	  goto fail;
   }
 
-  //Air Pressure Handle
+  //Air Pressure Char
   //###################################################################################################################################
   GET_ENVIRONMENT_CHAR_PRESSURE_UUID(uuid);
   memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
@@ -544,6 +668,176 @@ tBleStatus LGS_AddEnvironmentService(void)
   if (ret != BLE_STATUS_SUCCESS) {
 	  goto fail;
   }
+
+
+
+
+
+  //###################################################################################################################################
+  //Add CONFIGURATION Service
+  //###################################################################################################################################
+  NumberOfRecords = 7; //Records for CONFIGURATION SERVICE
+
+  GET_CONFIGURATION_SERVICE_UUID(uuid);
+  memcpy(&service_uuid.Service_UUID_128, uuid, 16);		//Dest, Source, Length
+  ret = aci_gatt_add_serv(
+		  UUID_TYPE_128, 									//UUID Type: 16/128 bit
+		  service_uuid.Service_UUID_128, 					//16-bit or 128-bit UUID based on the UUID Type field; requests const uint8_t *
+		  PRIMARY_SERVICE,									//Primary or secondary service
+		  1+3*NumberOfRecords, 								//Maximum number of attribute records(including the service declaration itself)
+		  &m_serviceHandles.m_configurationServiceHandle);	//Service Handle
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+	  goto fail;
+  }
+
+  //Repetition Rate
+    //###################################################################################################################################
+  	GET_ENVIRONMENT_CHAR_SETTINGS_REPRATE_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+  		  UUID_TYPE_128,											//UUID Type: 16/128 bit
+  		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
+  		  2+sizeof(m_environmentData.m_repRateBT),					//Länge
+  		  CHAR_PROP_WRITE | CHAR_PROP_READ,							//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+  		  // Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+  		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
+  		  GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+  		  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,				//Bit mask gattEvtMask
+  		  // Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+  		  16,														//encryKeySize 7-16bit
+  		  0,														//If the attribute has a variable length value field (1) or not (0).
+  		  &m_serviceHandles.m_configurationsRepRateHandle);			//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+  	  goto fail;
+    }
+
+  //Critic Temperature
+    //###################################################################################################################################
+    GET_ENVIRONMENT_CHAR_SETTINGS_CRITTEMP_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+    		UUID_TYPE_128,											//UUID Type: 16/128 bit
+			char_uuid.Char_UUID_128,								//Requests const uint8_t *
+			2+sizeof(m_environmentData.m_criticTemperature),		//Länge
+			CHAR_PROP_WRITE | CHAR_PROP_READ,						//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+			// Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+			ATTR_PERMISSION_NONE,									//Security permissions for the added characteristic
+			GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+			GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+			// Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+			16,														//encryKeySize 7-16bit
+			0,														//If the attribute has a variable length value field (1) or not (0).
+			&m_serviceHandles.m_configurationsCriticTemperature);	//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+    	goto fail;
+    }
+
+    //Critic VOC
+    //###################################################################################################################################
+    GET_ENVIRONMENT_CHAR_SETTINGS_CRITVOC_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+    		UUID_TYPE_128,											//UUID Type: 16/128 bit
+			char_uuid.Char_UUID_128,								//Requests const uint8_t *
+			2+sizeof(m_environmentData.m_criticVOC),				//Länge
+			CHAR_PROP_WRITE | CHAR_PROP_READ,						//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+			// Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+			ATTR_PERMISSION_NONE,									//Security permissions for the added characteristic
+			GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+			GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+			// Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+			16,														//encryKeySize 7-16bit
+			0,														//If the attribute has a variable length value field (1) or not (0).
+			&m_serviceHandles.m_configurationsCriticVOC);			//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+    	goto fail;
+    }
+
+    //Critic CO2
+    //###################################################################################################################################
+    GET_ENVIRONMENT_CHAR_SETTINGS_CRITCO2_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+    		UUID_TYPE_128,											//UUID Type: 16/128 bit
+			char_uuid.Char_UUID_128,								//Requests const uint8_t *
+			2+sizeof(m_environmentData.m_criticCo2),				//Länge
+			CHAR_PROP_WRITE | CHAR_PROP_READ,						//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+			// Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+			ATTR_PERMISSION_NONE,									//Security permissions for the added characteristic
+			GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+			GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+			// Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+			16,														//encryKeySize 7-16bit
+			0,														//If the attribute has a variable length value field (1) or not (0).
+			&m_serviceHandles.m_configurationsCriticCo2);			//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+    	goto fail;
+    }
+
+    //Critic Humidity
+    //###################################################################################################################################
+    GET_ENVIRONMENT_CHAR_SETTINGS_CRITHUM_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+    		UUID_TYPE_128,											//UUID Type: 16/128 bit
+			char_uuid.Char_UUID_128,								//Requests const uint8_t *
+			2+sizeof(m_environmentData.m_criticHumidity),			//Länge
+			CHAR_PROP_WRITE | CHAR_PROP_READ,						//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+			// Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+			ATTR_PERMISSION_NONE,									//Security permissions for the added characteristic
+			GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+			GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+			// Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+			16,														//encryKeySize 7-16bit
+			0,														//If the attribute has a variable length value field (1) or not (0).
+			&m_serviceHandles.m_configurationsCriticHumidity);		//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+    	goto fail;
+    }
+
+    //Critic Pressure
+    //###################################################################################################################################
+    GET_ENVIRONMENT_CHAR_SETTINGS_CRITPRES_UUID(uuid);
+    memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+    ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+    		UUID_TYPE_128,											//UUID Type: 16/128 bit
+			char_uuid.Char_UUID_128,								//Requests const uint8_t *
+			2+sizeof(m_environmentData.m_criticPressure),			//Länge
+			CHAR_PROP_WRITE | CHAR_PROP_READ,						//Bitwise OR values of Characteristic Properties; def: CHAR_PROP_WRITE
+			// Alternativ ggf: CHAR_PROP_WRITE_WITHOUT_RESP ?
+			ATTR_PERMISSION_NONE,									//Security permissions for the added characteristic
+			GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+			GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+			// Alternativ: GATT_NOTIFY_ATTRIBUTE_WRITE ?
+			16,														//encryKeySize 7-16bit
+			0,														//If the attribute has a variable length value field (1) or not (0).
+			&m_serviceHandles.m_configurationsCriticPressure);		//Handle of the Characteristic that has been added.
+    if (ret != BLE_STATUS_SUCCESS) {
+    	goto fail;
+    }
+
+  //Output Active Flag
+  //###################################################################################################################################
+  GET_ENVIRONMENT_CHAR_SETTINGS_OUTPUTACT_UUID(uuid);
+  memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+  ret =  aci_gatt_add_char(m_serviceHandles.m_configurationServiceHandle,//Handle of the service to which the characteristic has to be added.
+		  UUID_TYPE_128,											//UUID Type: 16/128 bit
+		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
+		  2+sizeof(m_environmentData.m_outputActive),				//Länge
+		  CHAR_PROP_NOTIFY,											//CHAR_PROP_NOTIFY
+		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
+		  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,				//Bit mask gattEvtMask
+		  16,														//encryKeySize 7-16bit
+		  0,														//If the attribute has a variable length value field (1) or not (0).
+		  &m_serviceHandles.m_configurationsOutputActive);			//Handle of the Characteristic that has been added.
+  if (ret != BLE_STATUS_SUCCESS) {
+	  goto fail;
+  }
+
+
+
+
 
   return BLE_STATUS_SUCCESS;
 
@@ -562,53 +856,64 @@ fail:
  */
 void LGS_UserNotify(void * pData)
 {
-  hci_uart_pckt *hci_pckt = pData;
-  /* obtain event packet */
-  hci_event_pckt *event_pckt = (hci_event_pckt*)hci_pckt->data;
+	hci_uart_pckt *hci_pckt = pData;
+	/* obtain event packet */
+	hci_event_pckt *event_pckt = (hci_event_pckt*)hci_pckt->data;
 
-  if(hci_pckt->type != HCI_EVENT_PKT)
-    return;
+	if(hci_pckt->type != HCI_EVENT_PKT)
+		return;
 
-  switch(event_pckt->evt)
-  {
-  case EVT_DISCONN_COMPLETE:
-    {
-      GAP_DisconnectionComplete_CB();
-    }
-    break;
+	switch(event_pckt->evt)
+	{
+	case EVT_DISCONN_COMPLETE:
+	{
+		GAP_DisconnectionComplete_CB();
+	}
+	break;
 
-  case EVT_LE_META_EVENT:
-    {
-      evt_le_meta_event *evt = (void *)event_pckt->data;
+	case EVT_LE_META_EVENT:
+	{
+		evt_le_meta_event *evt = (void *)event_pckt->data;
 
-      switch(evt->subevent)
-      {
-      case EVT_LE_CONN_COMPLETE:
-        {
-          evt_le_connection_complete *cc = (void *)evt->data;
-          GAP_ConnectionComplete_CB(cc->peer_bdaddr, cc->handle);
-        }
-        break;
-      }
-    }
-    break;
+		switch(evt->subevent)
+		{
+		case EVT_LE_CONN_COMPLETE:
+		{
+			evt_le_connection_complete *cc = (void *)evt->data;
+			GAP_ConnectionComplete_CB(cc->peer_bdaddr, cc->handle);
+		}
+		break;
+		}
+	}
+	break;
 
-  case EVT_VENDOR:
-    {
-      evt_blue_aci *blue_evt = (void*)event_pckt->data;
-      switch(blue_evt->ecode){
+	case EVT_VENDOR:
+	{
+		evt_blue_aci *blue_evt = (void*)event_pckt->data;
+		switch(blue_evt->ecode)
+		{
+		// Read Request empfangen
+		case EVT_BLUE_GATT_READ_PERMIT_REQ:
+		{
+			evt_gatt_read_permit_req *pr = (void*)blue_evt->data;
+			Read_Request_CB(pr->attr_handle);
+			break;
+		}
 
-      case EVT_BLUE_GATT_READ_PERMIT_REQ:
-        {
-          evt_gatt_read_permit_req *pr = (void*)blue_evt->data;
-          Read_Request_CB(pr->attr_handle);
-        }
-        break;
-      }
 
-    }
-    break;
-  }
+		// Write Request empfangen
+		case EVT_BLUE_GATT_WRITE_PERMIT_REQ:
+		{
+			evt_gatt_write_permit_req *pr = (void*)blue_evt->data;
+			Write_Request_CB(pr->attr_handle, pr->data_length, pr->data);
+			break;
+		}
+
+		}
+
+	}
+	break;
+	}
 }
 
 /**
@@ -665,7 +970,134 @@ void Read_Request_CB(uint16_t handle)
 }
 
 
+/*******************************************************************************
+* Function Name  : Write_Request_CB.
+* Description    : Handle Write Request
+* Input          : - Handle of the characteristic to write.
+* 				   - Length of Data received
+* 				   - Received Data
+* Return         : None.
+*******************************************************************************/
+void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
+{
+	tBleStatus ret;
 
+	if(connection_handle !=0)
+	{
+		uint8_t write_status = ERR_WRITE_STATUS_OK;
+		uint8_t error_code	 = ERR_CODE_NO_ERROR;
+
+		if(m_serviceHandles.m_configurationsRepRateHandle == (handle - 1))
+		{
+			uint16_t receivedRepRate = *((uint16_t*)data);
+			if((receivedRepRate <= LGS_CYCLIC_SEND_INTERVAL_MAX)
+					&& (receivedRepRate >= LGS_CYCLIC_SEND_INTERVAL_MIN))
+			{
+				//OK
+				m_environmentData.m_repRateBT = receivedRepRate;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_configurationsCriticTemperature == (handle - 1))
+		{
+			uint16_t receivedCritTemp = *((int8_t*)data);
+			if((receivedCritTemp <= LGS_CYCLIC_CRITICTEMP_MAX)
+					&& (receivedCritTemp >= LGS_CYCLIC_CRITICTEMP_MIN))
+			{
+				//OK
+				m_environmentData.m_criticTemperature = receivedCritTemp;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_configurationsCriticVOC == (handle - 1))
+		{
+			uint16_t receivedCritVOC = *((uint16_t*)data);
+			if((receivedCritVOC <= LGS_CYCLIC_CRITICVOC_MAX)
+					&& (receivedCritVOC >= LGS_CYCLIC_CRITICVOC_MIN))
+			{
+				//OK
+				m_environmentData.m_criticVOC = receivedCritVOC;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_configurationsCriticCo2 == (handle - 1))
+		{
+			uint16_t receivedCritCO2 = *((uint16_t*)data);
+			if((receivedCritCO2 <= LGS_CYCLIC_CRITICCO2_MAX)
+					&& (receivedCritCO2 >= LGS_CYCLIC_CRITICCO2_MIN))
+			{
+				//OK
+				m_environmentData.m_criticCo2 = receivedCritCO2;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_configurationsCriticHumidity == (handle - 1))
+		{
+			uint16_t receivedCritHumidity = *((uint8_t*)data);
+			if((receivedCritHumidity <= LGS_CYCLIC_CRITICHUMIDITY_MAX)
+					&& (receivedCritHumidity >= LGS_CYCLIC_CRITICHUMIDITY_MIN))
+			{
+				//OK
+				m_environmentData.m_criticHumidity = receivedCritHumidity;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_configurationsCriticPressure == (handle - 1))
+		{
+			uint16_t receivedCritPressure = *((uint16_t*)data);
+			if((receivedCritPressure <= LGS_CYCLIC_CRITICPRESSURE_MAX)
+					&& (receivedCritPressure >= LGS_CYCLIC_CRITICPRESSURE_MIN))
+			{
+				//OK
+				m_environmentData.m_criticPressure = receivedCritPressure;
+			}
+			else
+			{
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else
+		{
+			write_status = ERR_WRITE_STATUS_NOK;
+			error_code = ERR_CODE_UNKNOWN_ATTR;
+		}
+
+		ret = aci_gatt_write_response(
+				connection_handle,
+				handle,
+				write_status, 	//Write Status
+				error_code,		//Fehlercode
+				data_length,
+				data
+		);
+
+		if (ret != BLE_STATUS_SUCCESS)
+		{
+			PRINTF("aci_gatt_allow_read() failed: 0x%02x\r\n", ret);
+		}
+	}
+}
 
 
 

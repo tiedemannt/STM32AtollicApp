@@ -28,8 +28,17 @@ int main(void)
 
 
   MX_GPIO_Init(); 			//Init GPIO
-  LGS_BLE_Init();
+  LGS_BLE_Init();			//Init BLE
 
+
+  //Set Default Values:
+  m_environmentData.m_repRateBT 		= LGS_CYCLIC_SEND_INTERVAL_DEFAULT;
+  m_environmentData.m_outputActive 		= LGS_DEFAULT_OUTPUT_ACTIVE;
+  m_environmentData.m_criticTemperature = LGS_DEFAULT_CRITIC_TEMPERATURE;
+  m_environmentData.m_criticVOC 		= LGS_DEFAULT_CRITIC_VOC;
+  m_environmentData.m_criticCo2 		= LGS_DEFAULT_CRITIC_CO2;
+  m_environmentData.m_criticHumidity 	= LGS_DEFAULT_CRITIC_HUMIDITY;
+  m_environmentData.m_criticPressure 	= LGS_DEFAULT_CRITIC_PRESSURE;
 
   while (1)
   {
