@@ -14,8 +14,8 @@
 
 #define LGS_DATAMANAGEMENT_MAX_DATAELEMENTS	240U  	//Maximal 240*8Byte = 1920Byte -> Sollte für FSM ein vielfaches von 20 sein
 
-#define DATAMANAGEMENT_INTERVAL_TEST 10000U			//Test: Alle 10s Wert speichern
-#define DATAMANAGEMENT_INTERVAL_10PERHOUR 360000U	//Alle 6min = 10/h
+#define DATAMANAGEMENT_INTERVAL_TEST 		10000U			//Test: Alle 10s Wert speichern
+#define DATAMANAGEMENT_INTERVAL_10PERHOUR 	360000U			//Alle 6min = 10/h
 
 
 /**

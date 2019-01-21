@@ -104,9 +104,13 @@ uint32_t	m_startTicks = 0U;
 
 //FSM Speicher: Der angeforderte Datentyp
 uint8_t 	m_requestedDataType = 0U;
-uint16_t	m_paketCount = 0U;
 uint32_t	m_fsmTimeoutTick = 0U;
 uint32_t	m_fsmTickSendIndicateReady = 0U;
+union indicatePaket
+{
+	uint16_t u16[2];
+	uint32_t u32;
+}m_indicatePaket;
 
 Service_UUID_t 	service_uuid;
 Char_UUID_t 	char_uuid;
@@ -274,7 +278,6 @@ void LGS_BLE_Process(void)
 void LGS_SetAddress(uint8_t* bdaddr, uint8_t hwVersion, uint16_t fwVersion)
 {
 	//Random
-
 	uint8_t i;
 
 	/* Initialize a random seed */
@@ -928,7 +931,7 @@ tBleStatus LGS_AddServices(void)
   ret =  aci_gatt_add_char(m_serviceHandles.m_fsmServiceHandle,	//Handle of the service to which the characteristic has to be added.
 		  UUID_TYPE_128,											//UUID Type: 16/128 bit
 		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
-		  2+sizeof(uint16_t),										//Länge: 16bit Anzahl Pakete (für Read-Prozess)
+		  2*sizeof(uint16_t),										//Länge: 16bit Anzahl Pakete (für Read-Prozess), 16bit Anzahl Daten pro Paket
 		  CHAR_PROP_NOTIFY,											//NOTIFY
 		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
 		  GATT_DONT_NOTIFY_EVENTS,									//Bit mask gattEvtMask
@@ -980,21 +983,25 @@ void LGS_BLE_IndicateReadProcessReady(void)
 	if((m_requestedDataType == 1U) || (m_requestedDataType == 2U))
 	{
 		//8bit Wert requested
-		m_paketCount = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_8BIT;
+		m_indicatePaket.u16[0] = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_8BIT; //Anzahl Pakete
+		m_indicatePaket.u16[1] = FSM_VALUECOUNT_8BIT; //Anzahl Daten pro Paket
 	}
 	else
 	{
 		//16bit Wert requested
-		m_paketCount = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_16BIT;
+		m_indicatePaket.u16[0] = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_16BIT; //Anzahl Pakete
+		m_indicatePaket.u16[1] = FSM_VALUECOUNT_16BIT; //Anzahl Daten pro Paket
 	}
+
+	uint32_t transmitData = m_indicatePaket.u32;
 
 	//Notify Process ready; Payload: Paket Count
 	(void)aci_gatt_update_char_value(
 			m_serviceHandles.m_fsmServiceHandle, 			//Service Handle
 			m_serviceHandles.m_fsmNotifyReadyHandle,		//Characteristic Handle
 			0, 												//Offset
-			2+sizeof(uint16_t),								//LEN
-			&m_paketCount);									//const void *  charValue
+			2*sizeof(uint16_t),								//LEN
+			&transmitData);									//const void *  charValue
 
 	m_fsmTimeoutTick = HAL_GetTick();	//Timeout initialisieren
 }
@@ -1328,33 +1335,29 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 		}
 		else if(m_serviceHandles.m_fsmRequestHandle == (handle - 1))
 		{
-			//Trigger: Starte den Leseprozess;
-			if(LGS_DATAMANAGEMENT_ISPROCESSACTIVE())
+			m_requestedDataType = *((uint8_t*)data);
+
+			if(m_requestedDataType == 0U)
 			{
-				//Es ist bereits ein Prozess aktiv
-				write_status = ERR_WRITE_STATUS_NOK;
-				error_code	 = ERR_CODE_OTHER_PROCESS_ACTIVE;
+				//Prozess abgeschlossen
+				LGS_DATAMANAGEMENT_ReadProcessFinished();
+			}
+			else if((m_requestedDataType < 6U) && (m_requestedDataType > 0U))
+			{
+				//1: Temperatur lesen
+				//2: Feuchte lesen
+				//3: Druck lesen
+				//4: Co2 lesen
+				//5: Voc lesen
+				LGS_DATAMANAGEMENT_StartReadProcess();
+				m_fsmTimeoutTick = HAL_GetTick();
+				m_fsmTickSendIndicateReady = HAL_GetTick();
 			}
 			else
 			{
-				m_requestedDataType = *((uint8_t*)data);
-
-				if((m_requestedDataType < 6U) && (m_requestedDataType > 0U))
-				{
-					//1: Temperatur lesen
-					//2: Feuchte lesen
-					//3: Druck lesen
-					//4: Co2 lesen
-					//5: Voc lesen
-					LGS_DATAMANAGEMENT_StartReadProcess();
-					m_fsmTickSendIndicateReady = HAL_GetTick();
-				}
-				else
-				{
-					//Prozess nicht definiert
-					write_status = ERR_WRITE_STATUS_NOK;
-					error_code	 = ERR_CODE_PROCESS_NOT_DEFINED;
-				}
+				//Prozess nicht definiert
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_PROCESS_NOT_DEFINED;
 			}
 		}
 		else

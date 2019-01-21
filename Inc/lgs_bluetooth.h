@@ -63,9 +63,9 @@
 
 //FSM Konstanten:
 #define FSM_TIMEOUT							20000					//20s
-#define FSM_VALUECOUNT_16BIT				10U						//10 Werte
-#define FSM_VALUECOUNT_8BIT					(FSM_VALUECOUNT_16BIT*2U)//20 Werte
-#define FSM_DELAYINDICATEREADY				500						//300ms
+#define FSM_VALUECOUNT_16BIT				30U						//30 * 2 * 8bit = 480bit Payload
+#define FSM_VALUECOUNT_8BIT					60U						//60 * 1 * 8bit = 480bit Payload
+#define FSM_DELAYINDICATEREADY				20						//50ms
 
 
 /**
