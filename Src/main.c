@@ -11,10 +11,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "lgs_bluetooth.h"
+#include "lgs_datamanagement.h"
 
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+void checkOutputActiveFlag(void);
+void setDefaultValues(void);
+
+
+#define TESTBOARD
 
 
 /**
@@ -26,26 +32,73 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
 
+  //1 - Init GPIO:
+  MX_GPIO_Init();
+  //2 - Init BLE:
+  LGS_BLE_Init();
+  //3 - Init Datamanagement (EEPROM-Interface):
+  LGS_DATAMANAGEMENT_Init(DATAMANAGEMENT_INTERVAL_TEST);
 
-  MX_GPIO_Init(); 			//Init GPIO
-  LGS_BLE_Init();			//Init BLE
 
-
-  //Set Default Values:
-  m_environmentData.m_repRateBT 		= LGS_CYCLIC_SEND_INTERVAL_DEFAULT;
-  m_environmentData.m_outputActive 		= LGS_DEFAULT_OUTPUT_ACTIVE;
-  m_environmentData.m_criticTemperature = LGS_DEFAULT_CRITIC_TEMPERATURE;
-  m_environmentData.m_criticVOC 		= LGS_DEFAULT_CRITIC_VOC;
-  m_environmentData.m_criticCo2 		= LGS_DEFAULT_CRITIC_CO2;
-  m_environmentData.m_criticHumidity 	= LGS_DEFAULT_CRITIC_HUMIDITY;
-  m_environmentData.m_criticPressure 	= LGS_DEFAULT_CRITIC_PRESSURE;
+  setDefaultValues(); //TODO: Inhalt der Funktion in EEPROM verschieben
 
   while (1)
   {
 
-	  LGS_BLE_Process();
+#ifdef TESTBOARD
+	  //Für Test Bluetooth- und EEPROM-Schnittstelle ohne Sensoren am Board:
+	  LGS_GenerateRandomData(); //Schreibe zufällige neue Sensordaten in Datenstruktur
+#endif
 
+	  checkOutputActiveFlag();
+
+	  LGS_BLE_Process();		 	//Nach checkOutputActiveFlag() aufrufen!
+
+	  LGS_DATAMANAGEMENT_Process(); //WICHTIG: Als letztes in MainWhile aufrufen!
   }
+}
+
+/**
+ * Setzt Default-Values
+ * -> TODO: In EEPROM verschieben, sodass nicht mehr notwendig
+ */
+void setDefaultValues()
+{
+	//Set Default Values:
+	m_environmentData.m_repRateBT 			= LGS_CYCLIC_SEND_INTERVAL_DEFAULT;
+	m_environmentData.m_outputActive 		= LGS_DEFAULT_OUTPUT_ACTIVE;
+	m_environmentData.m_criticTemperature 	= LGS_DEFAULT_CRITIC_TEMPERATURE;
+	m_environmentData.m_criticVOC 			= LGS_DEFAULT_CRITIC_VOC;
+	m_environmentData.m_criticCo2 			= LGS_DEFAULT_CRITIC_CO2;
+	m_environmentData.m_criticHumidity 		= LGS_DEFAULT_CRITIC_HUMIDITY;
+	m_environmentData.m_criticPressure 		= LGS_DEFAULT_CRITIC_PRESSURE;
+}
+
+/**
+ * Prüft, ob das Flag für "Ausgang aktiv" gesetzt werden muss
+ */
+void checkOutputActiveFlag(void)
+{
+	if(		(m_environmentData.m_environmentTemperature 	> m_environmentData.m_criticTemperature)
+			|| 	(m_environmentData.m_environmentVOC 		> m_environmentData.m_criticVOC)
+			|| 	(m_environmentData.m_environmentCO2 		> m_environmentData.m_criticCo2)
+			|| 	(m_environmentData.m_environmentAirHumidity > m_environmentData.m_criticHumidity)
+			|| 	(m_environmentData.m_environmentAirPressure > m_environmentData.m_criticPressure))
+	{
+		if(m_environmentData.m_outputActive == 0U)
+		{
+			m_environmentData.m_isUpdateAvailable = 1U; 	//Update Available Flag
+		}
+		m_environmentData.m_outputActive = 1U;
+	}
+	else
+	{
+		if(m_environmentData.m_outputActive == 1U)
+		{
+			m_environmentData.m_isUpdateAvailable = 1U;	//Update Available Flag
+		}
+		m_environmentData.m_outputActive = 0U;
+	}
 }
 
 /**

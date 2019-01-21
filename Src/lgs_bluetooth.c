@@ -13,6 +13,7 @@
  * Includes
  */
 #include "lgs_bluetooth.h"
+#include "lgs_datamanagement.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -60,6 +61,7 @@ struct s_handles
 	//--
 	uint16_t 	m_environmentServiceHandle;		//Service Handle Environment
 	uint16_t	m_configurationServiceHandle;	//Service Handle Configuration
+	uint16_t 	m_fsmServiceHandle;				//Service Handle FSM
 
 	//Characteristic Data Handles
 	uint16_t    m_deviceNameCharHandle;			//Characteristic Handle Device Name
@@ -80,18 +82,31 @@ struct s_handles
 	uint16_t	m_configurationsCriticCo2;		//Characteristic Handle kritischer CO2 Wert
 	uint16_t	m_configurationsCriticHumidity;	//Characteristic Handle kritische Feuchte
 	uint16_t	m_configurationsCriticPressure;	//Characteristic Handle kritischer Druck
+
+	//Characteristic FSM Handles
+	uint16_t	m_fsmRequestHandle;				//Characteristic Handle FSM Request
+	uint16_t	m_fsmNotifyReadyHandle;			//Characteristic Handle FSM NotifyReady Paket
+	uint16_t	m_fsmReadPaketHandle;			//Characteristic Handle FSM Paket
 }m_serviceHandles;
 
 
 
 //General Variables
-uint8_t set_connectable = TRUE;
-uint16_t connection_handle = 0;
-int     connected;
-uint8_t  notification_enabled = FALSE;
-uint8_t bnrg_expansion_board = IDB05A1; //IDB5 expansion board
-uint8_t bdaddr[BDADDR_SIZE];
-uint32_t msSinceUpdate = 0;
+uint8_t 	set_connectable = TRUE;
+uint16_t 	connection_handle = 0;
+int     	connected;
+uint8_t  	notification_enabled = FALSE;
+uint8_t 	bnrg_expansion_board = IDB05A1; //IDB5 expansion board --> Für initBLEModul
+uint8_t 	bdaddr[BDADDR_SIZE];
+
+//Ticks Speicher (f. Timer)
+uint32_t	m_startTicks = 0U;
+
+//FSM Speicher: Der angeforderte Datentyp
+uint8_t 	m_requestedDataType = 0U;
+uint16_t	m_paketCount = 0U;
+uint32_t	m_fsmTimeoutTick = 0U;
+uint32_t	m_fsmTickSendIndicateReady = 0U;
 
 Service_UUID_t 	service_uuid;
 Char_UUID_t 	char_uuid;
@@ -102,6 +117,8 @@ Char_UUID_t 	char_uuid;
 	COPY_UUID_128(uuid_struct,0x7d,0x36,0xee,0xd5,0xca,0x05,0x42,0xf3,0x86,0x7e,0x4d,0x80,0x0a,0x45,0x9c,0xa1)
 #define GET_CONFIGURATION_SERVICE_UUID(uuid_struct)   \
 	COPY_UUID_128(uuid_struct,0x7d,0x36,0xee,0xd5,0xca,0x05,0x42,0xf3,0x86,0x7e,0x4d,0x80,0x0a,0x45,0x9c,0xa2)
+#define GET_FSM_READDATA_SERVICE_UUID(uuid_struct)	\
+	COPY_UUID_128(uuid_struct,0xad,0x42,0xa5,0x90,0xb7,0xaf,0x40,0x82,0xb8,0xf4,0xb4,0xb4,0x87,0x98,0xe6,0x96)
 
 //Daten UUID
 #define GET_ENVIRONMENT_CHAR_BRIGHT_UUID(uuid_struct)   \
@@ -133,17 +150,28 @@ Char_UUID_t 	char_uuid;
 #define GET_ENVIRONMENT_CHAR_SETTINGS_OUTPUTACT_UUID(uuid_struct)   \
 	COPY_UUID_128(uuid_struct,0x28,0x6c,0xc2,0x04,0x4b,0x3f,0x4f,0x82,0x8e,0xbb,0x66,0x73,0x72,0xb1,0x56,0x6f)
 
+//FSM ReadData UUID
+#define GET_FSM_READDATA_CHAR_REQUEST_UUID(uuid_struct)	\
+	COPY_UUID_128(uuid_struct,0xad,0x42,0xa5,0x90,0xb7,0xaf,0x40,0x82,0xb8,0xf4,0xb4,0xb4,0x87,0x98,0xe6,0x97)
+#define GET_FSM_READDATA_CHAR_NOTIFYREADY_UUID(uuid_struct)	\
+	COPY_UUID_128(uuid_struct,0xad,0x42,0xa5,0x90,0xb7,0xaf,0x40,0x82,0xb8,0xf4,0xb4,0xb4,0x87,0x98,0xe6,0x98)
+#define GET_FSM_READDATA_CHAR_READPAKET_UUID(uuid_struct)	\
+	COPY_UUID_128(uuid_struct,0xad,0x42,0xa5,0x90,0xb7,0xaf,0x40,0x82,0xb8,0xf4,0xb4,0xb4,0x87,0x98,0xe6,0x99)
+
 /**
  * Private function prototypes
  */
 void 		LGS_Process(void);
 void 		LGS_SetAddress(uint8_t* bdaddr, uint8_t hwVersion, uint16_t fwVersion);
-tBleStatus  LGS_AddEnvironmentService(void);
+tBleStatus  LGS_AddServices(void);
+void 		LGS_BLE_IndicateReadProcessReady(void);
+tBleStatus 	LGS_UpdateStackData(void);
+
 void 		GAP_DisconnectionComplete_CB(void);
 void 		GAP_ConnectionComplete_CB(uint8_t addr[6], uint16_t handle);
-tBleStatus 	LGS_UpdateStackData(void);
 void 		Read_Request_CB(uint16_t handle);
 void 		Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data);
+
 
 
 
@@ -217,13 +245,17 @@ void LGS_BLE_Init(void)
 	//###############################
 
 	//Weitere Services Initialisieren
-	ret = LGS_AddEnvironmentService();			//Init Environment Service
+	ret = LGS_AddServices();			//Init Environment Service
 	if (ret) while(1);							//Fehler? -> while(1)
 
 	//Set Output Power Level
 	(void)aci_hal_set_tx_power_level(
 			1,									//Enable High Power Flag: 0/1
 			PA_LEVEL);							//PA_Level: 0-7; Default: 4
+
+
+	//Startzeitpunkt auf 0 setzen:
+	m_startTicks = 0U;
 }
 
 /**
@@ -272,59 +304,73 @@ void LGS_Process(void)
 	BSP_LED_Toggle(LED2);
 #endif
 
-	if (connected)
+	if (connected) //Besteht eine Verbindung zu einem Smartphone?
 	{
-		//Für Nucleo Board: Zufällige Werte erzeugen
-#ifdef EVALUATIONBOARD
-		srand(HAL_GetTick()); //Set Seed for Random Generator
-
-		//Toggle Bright Flag
-		if(m_environmentData.m_environmentBright == 1)
+		//Mindest-Delay abgelaufen?
+		if((HAL_GetTick() - m_startTicks) > (((uint32_t)m_environmentData.m_repRateBT) * 1000U))
 		{
-			m_environmentData.m_environmentBright = 0;
-		}
-		else
-		{
-			m_environmentData.m_environmentBright = 1;
-		}
+			//Update verfügbar?
+			if(m_environmentData.m_isUpdateAvailable)
+			{
+				LGS_UpdateStackData();
+				m_environmentData.m_isUpdateAvailable = FALSE;
 
-		//Random Temperature
-		m_environmentData.m_environmentTemperature 	= 15 	+ 	((uint64_t)rand()*10)	/RAND_MAX; //15-25 °C
-		m_environmentData.m_environmentAirPressure 	= 980 	+ 	((uint64_t)rand()*40)	/RAND_MAX; //980-1020 mBar
-		m_environmentData.m_environmentCO2 			= 400 	+ 	((uint64_t)rand()*20)	/RAND_MAX; //400-420 ppm
-		m_environmentData.m_environmentAirHumidity 	= 			((uint64_t)rand()*100)	/RAND_MAX; //0-100 %
-		m_environmentData.m_environmentVOC 			= 20    +	((uint64_t)rand()*200)	/RAND_MAX; //20-220 ppb
-
-		m_environmentData.m_isUpdateAvailable = TRUE;
-#endif
-
-		//Ausgangsansteuerung prüfen
-		if(		(m_environmentData.m_environmentTemperature > m_environmentData.m_criticTemperature)
-			|| 	(m_environmentData.m_environmentVOC 		> m_environmentData.m_criticVOC)
-			|| 	(m_environmentData.m_environmentCO2 		> m_environmentData.m_criticCo2)
-			|| 	(m_environmentData.m_environmentAirHumidity > m_environmentData.m_criticHumidity)
-			|| 	(m_environmentData.m_environmentAirPressure > m_environmentData.m_criticPressure))
-		{
-			m_environmentData.m_outputActive = TRUE;
-		}
-		else
-		{
-			m_environmentData.m_outputActive = FALSE;
+				m_startTicks = HAL_GetTick();
+			}
 		}
 
-		//Update senden?
-		if((m_environmentData.m_isUpdateAvailable) &&
-				(((uint32_t)m_environmentData.m_repRateBT) * (uint32_t)2000) <= (msSinceUpdate * (uint32_t)2))
+		if(LGS_DATAMANAGEMENT_ISPROCESSACTIVE())
 		{
-			LGS_UpdateStackData();
-			m_environmentData.m_isUpdateAvailable = FALSE;
-			msSinceUpdate = 0;
+			//Timeout für FSM?
+			if((HAL_GetTick() - m_fsmTimeoutTick) > FSM_TIMEOUT)
+			{
+				//Prozess abbrechen
+				LGS_DATAMANAGEMENT_ReadProcessFinished();
+			}
+
+			//Delay für sende NotifyReady abgelaufen?
+			if((m_fsmTickSendIndicateReady > 0U)
+					&& ((HAL_GetTick() - m_fsmTickSendIndicateReady) > FSM_DELAYINDICATEREADY))
+			{
+				LGS_BLE_IndicateReadProcessReady();
+				m_fsmTickSendIndicateReady = 0U;
+			}
 		}
-
-
-		HAL_Delay(LGS_LOOPINTERVAL);
-		msSinceUpdate += LGS_LOOPINTERVAL;
 	}
+	else
+	{
+		if(LGS_DATAMANAGEMENT_ISPROCESSACTIVE())
+		{
+			LGS_DATAMANAGEMENT_ReadProcessFinished();
+		}
+	}
+}
+
+/*
+ * Generiert zufällige Sensordaten (halbwegs sinnvoll)
+ */
+void LGS_GenerateRandomData(void)
+{
+	srand(HAL_GetTick()); //Set Seed for Random Generator
+
+	//Toggle Bright Flag
+	if(m_environmentData.m_environmentBright == 1)
+	{
+		m_environmentData.m_environmentBright = 0;
+	}
+	else
+	{
+		m_environmentData.m_environmentBright = 1;
+	}
+
+	//Random Temperature
+	m_environmentData.m_environmentTemperature 	= 15 	+ 	((uint64_t)rand()*10)	/RAND_MAX; //15-25 °C
+	m_environmentData.m_environmentAirPressure 	= 980 	+ 	((uint64_t)rand()*40)	/RAND_MAX; //980-1020 mBar
+	m_environmentData.m_environmentCO2 			= 400 	+ 	((uint64_t)rand()*20)	/RAND_MAX; //400-420 ppm
+	m_environmentData.m_environmentAirHumidity 	=  20   +	((uint64_t)rand()*60)	/RAND_MAX; //20-80 %
+	m_environmentData.m_environmentVOC 			= 120   +	((uint64_t)rand()*100)	/RAND_MAX; //20-220 ppb
+
+	m_environmentData.m_isUpdateAvailable = TRUE;
 }
 
 /**
@@ -535,7 +581,7 @@ void LGS_SetDiscoverableMode(void)
  * @param  None
  * @retval tBleStatus Status
  */
-tBleStatus LGS_AddEnvironmentService(void)
+tBleStatus LGS_AddServices(void)
 {
   tBleStatus ret;
   int32_t NumberOfRecords=6;		// NUMBER OF RECORDS
@@ -838,12 +884,119 @@ tBleStatus LGS_AddEnvironmentService(void)
 
 
 
+  //###################################################################################################################################
+  //Add FSM DataRead Service
+  //###################################################################################################################################
+  NumberOfRecords = 3; //Records for CONFIGURATION SERVICE
+
+  GET_FSM_READDATA_SERVICE_UUID(uuid);
+  memcpy(&service_uuid.Service_UUID_128, uuid, 16);		//Dest, Source, Length
+  ret = aci_gatt_add_serv(
+		  UUID_TYPE_128, 									//UUID Type: 16/128 bit
+		  service_uuid.Service_UUID_128, 					//16-bit or 128-bit UUID based on the UUID Type field; requests const uint8_t *
+		  PRIMARY_SERVICE,									//Primary or secondary service
+		  1+3*NumberOfRecords, 								//Maximum number of attribute records(including the service declaration itself)
+		  &m_serviceHandles.m_fsmServiceHandle);			//Service Handle
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+	  goto fail;
+  }
+
+  //Request Message Android FSM
+  //###################################################################################################################################
+  GET_FSM_READDATA_CHAR_REQUEST_UUID(uuid);
+  memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+  ret =  aci_gatt_add_char(m_serviceHandles.m_fsmServiceHandle,	//Handle of the service to which the characteristic has to be added.
+		  UUID_TYPE_128,											//UUID Type: 16/128 bit
+		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
+		  2+sizeof(uint8_t),										//Länge: 8bit Selector
+		  CHAR_PROP_WRITE | CHAR_PROP_READ,							//READ/WRITE (Write: W-Request, Read: R-Request)
+		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
+		  GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP |
+		  	  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,			//Bit mask gattEvtMask
+		  16,														//encryKeySize 7-16bit
+		  0,														//If the attribute has a variable length value field (1) or not (0).
+		  &m_serviceHandles.m_fsmRequestHandle);					//Handle of the Characteristic that has been added.
+  if (ret != BLE_STATUS_SUCCESS) {
+	  goto fail;
+  }
+
+  //Notify Ready Paket for OP Android FSM
+  //###################################################################################################################################
+  GET_FSM_READDATA_CHAR_NOTIFYREADY_UUID(uuid);
+  memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+  ret =  aci_gatt_add_char(m_serviceHandles.m_fsmServiceHandle,	//Handle of the service to which the characteristic has to be added.
+		  UUID_TYPE_128,											//UUID Type: 16/128 bit
+		  char_uuid.Char_UUID_128,									//Requests const uint8_t *
+		  2+sizeof(uint16_t),										//Länge: 16bit Anzahl Pakete (für Read-Prozess)
+		  CHAR_PROP_NOTIFY,											//NOTIFY
+		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
+		  GATT_DONT_NOTIFY_EVENTS,									//Bit mask gattEvtMask
+		  16,														//encryKeySize 7-16bit
+		  0,														//If the attribute has a variable length value field (1) or not (0).
+		  &m_serviceHandles.m_fsmNotifyReadyHandle);				//Handle of the Characteristic that has been added.
+  if (ret != BLE_STATUS_SUCCESS) {
+	  goto fail;
+  }
+
+  //Datenpaket Android FSM
+  //###################################################################################################################################
+  GET_FSM_READDATA_CHAR_READPAKET_UUID(uuid);
+  memcpy(&char_uuid.Char_UUID_128, uuid, 16); //Dest, Source, Length
+  ret =  aci_gatt_add_char(m_serviceHandles.m_fsmServiceHandle,	//Handle of the service to which the characteristic has to be added.
+		  UUID_TYPE_128,											//UUID Type: 16/128 bit
+		  char_uuid.Char_UUID_128,									//Requests const uint8_t
+		  FSM_VALUECOUNT_16BIT*sizeof(uint16_t),					//Länge: 10*2Byte | 20*1Byte #MAX ALLOWED: 512Byte (BLE Spec.)
+		  CHAR_PROP_READ,											//Read
+		  ATTR_PERMISSION_NONE,										//Security permissions for the added characteristic
+		  GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,				//Bit mask gattEvtMask
+		  16,														//encryKeySize 7-16bit
+		  0,														//If the attribute has a variable length value field (1) or not (0).
+		  &m_serviceHandles.m_fsmReadPaketHandle);					//Handle of the Characteristic that has been added.
+  if (ret != BLE_STATUS_SUCCESS) {
+	  goto fail;
+  }
+
+
 
   return BLE_STATUS_SUCCESS;
 
   //###################################################################################################################################
 fail:
   return BLE_STATUS_ERROR;
+}
+
+
+/**
+ * Sendet Notify, dass Read Process gestartet werden kann
+ */
+void LGS_BLE_IndicateReadProcessReady(void)
+{
+	//1: Temperatur lesen
+	//2: Feuchte lesen
+	//3: Druck lesen
+	//4: Co2 lesen
+	//5: Voc lesen
+	if((m_requestedDataType == 1U) || (m_requestedDataType == 2U))
+	{
+		//8bit Wert requested
+		m_paketCount = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_8BIT;
+	}
+	else
+	{
+		//16bit Wert requested
+		m_paketCount = LGS_DATAMANAGEMENT_MAX_DATAELEMENTS / FSM_VALUECOUNT_16BIT;
+	}
+
+	//Notify Process ready; Payload: Paket Count
+	(void)aci_gatt_update_char_value(
+			m_serviceHandles.m_fsmServiceHandle, 			//Service Handle
+			m_serviceHandles.m_fsmNotifyReadyHandle,		//Characteristic Handle
+			0, 												//Offset
+			2+sizeof(uint16_t),								//LEN
+			&m_paketCount);									//const void *  charValue
+
+	m_fsmTimeoutTick = HAL_GetTick();	//Timeout initialisieren
 }
 
 
@@ -951,22 +1104,118 @@ void GAP_ConnectionComplete_CB(uint8_t addr[6], uint16_t handle)
 
 /*******************************************************************************
 * Function Name  : Read_Request_CB.
-* Description    : Update the sensor valuse.
+* Description    : Update the sensor values.
 * Input          : Handle of the characteristic to update.
 * Return         : None.
 *******************************************************************************/
 void Read_Request_CB(uint16_t handle)
 {
-  tBleStatus ret;
+	tBleStatus ret;
 
-  if(connection_handle !=0)
-  {
-    ret = aci_gatt_allow_read(connection_handle);
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      PRINTF("aci_gatt_allow_read() failed: 0x%02x\r\n", ret);
-    }
-  }
+	if(connection_handle !=0)
+	{
+		//Update nötig?
+		if(m_serviceHandles.m_fsmReadPaketHandle == (handle - 1))
+		{
+			if(LGS_DATAMANAGEMENT_ISPROCESSACTIVE())
+			{
+				//Reset Timeout-StartTick
+				m_fsmTimeoutTick = HAL_GetTick();
+
+				//Paket fertig machen
+				//1: Temperatur lesen
+				//2: Feuchte lesen
+				//3: Druck lesen
+				//4: Co2 lesen
+				//5: Voc lesen
+				if(m_requestedDataType == 1U)
+				{
+					//Temperatur lesen
+					int8_t data[FSM_VALUECOUNT_8BIT];
+					for(uint16_t i = 0U; i < FSM_VALUECOUNT_8BIT; i++)
+					{
+						data[i] = (LGS_DATAMANAGEMENT_ReadNextDataElement())->m_temperature;
+					}
+					(void)aci_gatt_update_char_value(
+							m_serviceHandles.m_fsmServiceHandle, 	//Service Handle
+							m_serviceHandles.m_fsmReadPaketHandle,  //Characteristic Handle
+							0, 										//Offset
+							FSM_VALUECOUNT_8BIT*sizeof(int8_t), 	//LEN
+							&data);									//const void *  charValue
+				}
+				else if(m_requestedDataType == 2U)
+				{
+					//Feuchte lesen
+					uint8_t data[FSM_VALUECOUNT_8BIT];
+					for(uint16_t i = 0U; i < FSM_VALUECOUNT_8BIT; i++)
+					{
+						data[i] = (LGS_DATAMANAGEMENT_ReadNextDataElement())->m_humidity;
+					}
+					(void)aci_gatt_update_char_value(
+							m_serviceHandles.m_fsmServiceHandle, 	//Service Handle
+							m_serviceHandles.m_fsmReadPaketHandle,  //Characteristic Handle
+							0, 										//Offset
+							FSM_VALUECOUNT_8BIT*sizeof(uint8_t), 	//LEN
+							&data);									//const void *  charValue
+				}
+				else if(m_requestedDataType == 3U)
+				{
+					//Druck lesen
+					uint16_t data[FSM_VALUECOUNT_16BIT];
+					for(uint16_t i = 0U; i < FSM_VALUECOUNT_16BIT; i++)
+					{
+						data[i] = (LGS_DATAMANAGEMENT_ReadNextDataElement())->m_pressure;
+					}
+					(void)aci_gatt_update_char_value(
+							m_serviceHandles.m_fsmServiceHandle, 	//Service Handle
+							m_serviceHandles.m_fsmReadPaketHandle,  //Characteristic Handle
+							0, 										//Offset
+							FSM_VALUECOUNT_16BIT*sizeof(uint16_t), 	//LEN
+							&data);									//const void *  charValue
+				}
+				else if(m_requestedDataType == 4U)
+				{
+					//Co2 lesen
+					uint16_t data[FSM_VALUECOUNT_16BIT];
+					for(uint16_t i = 0U; i < FSM_VALUECOUNT_16BIT; i++)
+					{
+						data[i] = (LGS_DATAMANAGEMENT_ReadNextDataElement())->m_co2;
+					}
+					(void)aci_gatt_update_char_value(
+							m_serviceHandles.m_fsmServiceHandle, 	//Service Handle
+							m_serviceHandles.m_fsmReadPaketHandle,  //Characteristic Handle
+							0, 										//Offset
+							FSM_VALUECOUNT_16BIT*sizeof(uint16_t), 	//LEN
+							&data);									//const void *  charValue
+				}
+				else //m_requestedDataType MUSS 5 sein
+				{
+					//Voc lesen
+					uint16_t data[FSM_VALUECOUNT_16BIT];
+					for(uint16_t i = 0U; i < FSM_VALUECOUNT_16BIT; i++)
+					{
+						data[i] = (LGS_DATAMANAGEMENT_ReadNextDataElement())->m_voc;
+					}
+					(void)aci_gatt_update_char_value(
+							m_serviceHandles.m_fsmServiceHandle, 	//Service Handle
+							m_serviceHandles.m_fsmReadPaketHandle,  //Characteristic Handle
+							0, 										//Offset
+							FSM_VALUECOUNT_16BIT*sizeof(uint16_t), 	//LEN
+							&data);									//const void *  charValue
+				}
+			}
+		}
+		else
+		{
+			//Für alle anderen Handles ist kein Update nötig, tue nichts
+		}
+
+		ret = aci_gatt_allow_read(connection_handle);
+		if (ret != BLE_STATUS_SUCCESS)
+		{
+			PRINTF("aci_gatt_allow_read() failed: 0x%02x\r\n", ret);
+		}
+	}
 }
 
 
@@ -1075,6 +1324,37 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				write_status = ERR_WRITE_STATUS_NOK;
 				error_code	 = ERR_CODE_VALUE_NOK;
+			}
+		}
+		else if(m_serviceHandles.m_fsmRequestHandle == (handle - 1))
+		{
+			//Trigger: Starte den Leseprozess;
+			if(LGS_DATAMANAGEMENT_ISPROCESSACTIVE())
+			{
+				//Es ist bereits ein Prozess aktiv
+				write_status = ERR_WRITE_STATUS_NOK;
+				error_code	 = ERR_CODE_OTHER_PROCESS_ACTIVE;
+			}
+			else
+			{
+				m_requestedDataType = *((uint8_t*)data);
+
+				if((m_requestedDataType < 6U) && (m_requestedDataType > 0U))
+				{
+					//1: Temperatur lesen
+					//2: Feuchte lesen
+					//3: Druck lesen
+					//4: Co2 lesen
+					//5: Voc lesen
+					LGS_DATAMANAGEMENT_StartReadProcess();
+					m_fsmTickSendIndicateReady = HAL_GetTick();
+				}
+				else
+				{
+					//Prozess nicht definiert
+					write_status = ERR_WRITE_STATUS_NOK;
+					error_code	 = ERR_CODE_PROCESS_NOT_DEFINED;
+				}
 			}
 		}
 		else

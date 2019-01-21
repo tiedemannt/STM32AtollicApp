@@ -26,11 +26,12 @@
 #define PA_LEVEL		   7 //(Power Output Level: 0-7)
 #define ADV_INTERVAL_MIN_MS  	 			1000
 #define ADV_INTERVAL_MAX_MS  	 			1200
-#define LGS_LOOPINTERVAL 					200		//5*pro Sekunde
 
 #define ERR_CODE_UNKNOWN_ATTR				0x10
 #define ERR_CODE_LENGTH_NOK					0x11
 #define ERR_CODE_VALUE_NOK					0x12
+#define	ERR_CODE_PROCESS_NOT_DEFINED		0x14
+#define	ERR_CODE_OTHER_PROCESS_ACTIVE		0x15
 #define ERR_CODE_NO_ERROR					0x0
 #define ERR_WRITE_STATUS_OK					0x0
 #define ERR_WRITE_STATUS_NOK				0x1
@@ -60,6 +61,12 @@
 #define LGS_DEFAULT_OUTPUT_ACTIVE			0		//Ausgang aktiv Flag per Default nicht aktiv
 
 
+//FSM Konstanten:
+#define FSM_TIMEOUT							20000					//20s
+#define FSM_VALUECOUNT_16BIT				10U						//10 Werte
+#define FSM_VALUECOUNT_8BIT					(FSM_VALUECOUNT_16BIT*2U)//20 Werte
+#define FSM_DELAYINDICATEREADY				500						//300ms
+
 
 /**
  * Typedefs / Struct definitions
@@ -85,6 +92,9 @@ void LGS_UserNotify(void * pData);
 void LGS_BLE_Init(void);
 void LGS_BLE_Process(void);
 void LGS_BLE_UpdateDefaultSettings(void);
+void LGS_BLE_IndicateReadProcessReady(void);
+
+void LGS_GenerateRandomData(void);
 
 extern uint8_t Application_Max_Attribute_Records[];
 
@@ -100,6 +110,7 @@ extern uint8_t Application_Max_Attribute_Records[];
 typedef struct
 {
 	//Data
+	//Aktuelle Messdaten; Wird zyklisch ebenfalls in EEPROM gespeichert zum Abrufen
 	uint8_t 	m_environmentBright; 		//Flag; Gibt an ob Umgebung hell (=1) oder dunkel (=0) ist
 	int8_t  	m_environmentTemperature;	//Temperatur; Gemessen in [1]°C
 	uint16_t 	m_environmentVOC;			//Volatile Organic Compound; Gemessen in [1]PPB
@@ -107,7 +118,8 @@ typedef struct
 	uint8_t		m_environmentAirHumidity;	//Luftfeuchte; Gemessen in [1]%
 	uint16_t	m_environmentAirPressure;	//Luftdruck; gemessen in [1]mBar
 
-	//Settings Data:
+	//Settings Data
+	//Einstellbar über Bluetooth und in EEPROM gespeichert:
 	uint16_t	m_repRateBT;				//Wiederholrate in [1]s, mit der die Daten gesendet werden
 	uint8_t 	m_outputActive;				//Ausgang aktiv? ja(1), nein (0)
 	int8_t		m_criticTemperature;		//Temperatur, über der der Ausgang geschaltet wird
@@ -117,7 +129,7 @@ typedef struct
 	uint16_t	m_criticPressure;			//Druckwert, über dem der Ausgang geschaltet wird
 
 	//Update?
-	uint8_t 	m_isUpdateAvailable;		//Muss ein Update gemacht werden?
+	uint8_t 	m_isUpdateAvailable;		//Muss ein Update/Notify gemacht werden?
 } s_environmentData;
 
 extern s_environmentData m_environmentData; //Datenstruktur ist definiert in "lgs_bluetooth.c"
