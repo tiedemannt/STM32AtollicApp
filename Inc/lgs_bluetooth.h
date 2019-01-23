@@ -37,8 +37,8 @@
 #define ERR_WRITE_STATUS_NOK				0x1
 
 //Grenzwerte
-#define LGS_CYCLIC_SEND_INTERVAL_MAX		600     //10 min
-#define LGS_CYCLIC_SEND_INTERVAL_MIN		1	    //1s
+#define LGS_CYCLIC_SAVE_INTERVAL_MAX		0xFFFF  //Viele viele Minuten
+#define LGS_CYCLIC_SAVE_INTERVAL_MIN		1	    //1s
 #define LGS_CYCLIC_CRITICTEMP_MAX			100		//100°C
 #define LGS_CYCLIC_CRITICTEMP_MIN			-100	//-100°C
 #define LGS_CYCLIC_CRITICVOC_MAX			10000 	//10.000 ppb
@@ -51,8 +51,10 @@
 #define LGS_CYCLIC_CRITICPRESSURE_MIN		0		//0mBar
 
 
+//Sendeabstand:
+#define LGS_CYCLIC_SEND_INTERVAL_DEFAULT 	3U    	//3s
+
 //Defaultwerte:
-#define LGS_CYCLIC_SEND_INTERVAL_DEFAULT 	2    	//2s
 #define LGS_DEFAULT_CRITIC_TEMPERATURE		30		//30°C
 #define LGS_DEFAULT_CRITIC_VOC				3000	//3000ppb
 #define LGS_DEFAULT_CRITIC_CO2				1000	//1000ppm
@@ -130,6 +132,8 @@ typedef struct
 
 	//Update?
 	uint8_t 	m_isUpdateAvailable;		//Muss ein Update/Notify gemacht werden?
+	uint8_t 	m_isNewCriticDataAvailable; //Muss in das EEPROM geschrieben werden?
+	uint8_t		m_isNewSaveIntervalAvailable; //Hat sich das Speicherintervall geändert?
 } s_environmentData;
 
 extern s_environmentData m_environmentData; //Datenstruktur ist definiert in "lgs_bluetooth.c"

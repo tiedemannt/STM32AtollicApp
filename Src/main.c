@@ -17,7 +17,6 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 void checkOutputActiveFlag(void);
-void setDefaultValues(void);
 
 
 #define TESTBOARD
@@ -37,10 +36,11 @@ int main(void)
   //2 - Init BLE:
   LGS_BLE_Init();
   //3 - Init Datamanagement (EEPROM-Interface):
-  LGS_DATAMANAGEMENT_Init(DATAMANAGEMENT_INTERVAL_TEST);
+  LGS_DATAMANAGEMENT_Init();
 
+  LGS_READ_CriticLevels(); //Liest das folgende aus EEPROM:
+  m_environmentData.m_outputActive 		= LGS_DEFAULT_OUTPUT_ACTIVE;
 
-  setDefaultValues(); //TODO: Inhalt der Funktion in EEPROM verschieben
 
   while (1)
   {
@@ -58,21 +58,6 @@ int main(void)
   }
 }
 
-/**
- * Setzt Default-Values
- * -> TODO: In EEPROM verschieben, sodass nicht mehr notwendig
- */
-void setDefaultValues()
-{
-	//Set Default Values:
-	m_environmentData.m_repRateBT 			= LGS_CYCLIC_SEND_INTERVAL_DEFAULT;
-	m_environmentData.m_outputActive 		= LGS_DEFAULT_OUTPUT_ACTIVE;
-	m_environmentData.m_criticTemperature 	= LGS_DEFAULT_CRITIC_TEMPERATURE;
-	m_environmentData.m_criticVOC 			= LGS_DEFAULT_CRITIC_VOC;
-	m_environmentData.m_criticCo2 			= LGS_DEFAULT_CRITIC_CO2;
-	m_environmentData.m_criticHumidity 		= LGS_DEFAULT_CRITIC_HUMIDITY;
-	m_environmentData.m_criticPressure 		= LGS_DEFAULT_CRITIC_PRESSURE;
-}
 
 /**
  * Prüft, ob das Flag für "Ausgang aktiv" gesetzt werden muss

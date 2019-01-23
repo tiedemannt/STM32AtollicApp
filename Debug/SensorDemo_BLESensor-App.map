@@ -60,7 +60,7 @@ m_indicatePaket     0x4               Src\lgs_bluetooth.o
 m_dataElementToWrite
                     0x8               Src\lgs_datamanagement.o
 dataJoinUnion       0x4               Src\lgs_datamanagement.o
-m_environmentData   0x18              Src\lgs_bluetooth.o
+m_environmentData   0x1a              Src\lgs_bluetooth.o
 m_currentDataElementPositionReadProcess
                     0x2               Src\lgs_datamanagement.o
 hspi1               0x58              Src\nucleo_l053r8_bus.o
@@ -1228,8 +1228,6 @@ Discarded input sections
  .text          0x00000000        0x0 Src\lgs_bluetooth.o
  .data          0x00000000        0x0 Src\lgs_bluetooth.o
  .bss           0x00000000        0x0 Src\lgs_bluetooth.o
- .text.LGS_SetAddress
-                0x00000000       0x12 Src\lgs_bluetooth.o
  .text.GAP_ConnectionComplete_CB
                 0x00000000       0x14 Src\lgs_bluetooth.o
  .data.bnrg_expansion_board
@@ -1241,6 +1239,10 @@ Discarded input sections
                 0x00000000       0x18 Src\lgs_datamanagement.o
  .text.readDataUint16
                 0x00000000       0x1c Src\lgs_datamanagement.o
+ .text.readDataInt8
+                0x00000000        0xa Src\lgs_datamanagement.o
+ .text.writeDataInt8
+                0x00000000        0xa Src\lgs_datamanagement.o
  .text          0x00000000        0x0 Src\main.o
  .data          0x00000000        0x0 Src\main.o
  .bss           0x00000000        0x0 Src\main.o
@@ -1473,7 +1475,7 @@ LOAD d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-ato
                 0x08000000                g_pfnVectors
                 0x080000c0                . = ALIGN (0x4)
 
-.text           0x080000c0     0x3974
+.text           0x080000c0     0x3aa4
                 0x080000c0                . = ALIGN (0x4)
  *(.text)
  .text          0x080000c0       0x48 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
@@ -1699,279 +1701,292 @@ LOAD d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-ato
                 0x0800220c                hci_tl_lowlevel_init
  .text.Read_Request_CB.part.3
                 0x08002278       0xb0 Src\lgs_bluetooth.o
+ .text.LGS_SetAddress
+                0x08002328       0x2a Src\lgs_bluetooth.o
+                0x08002328                LGS_SetAddress
+ *fill*         0x08002352        0x2 
  .text.LGS_GenerateRandomData
-                0x08002328       0xb0 Src\lgs_bluetooth.o
-                0x08002328                LGS_GenerateRandomData
+                0x08002354       0xb0 Src\lgs_bluetooth.o
+                0x08002354                LGS_GenerateRandomData
  .text.LGS_UpdateStackData
-                0x080023d8       0xa8 Src\lgs_bluetooth.o
-                0x080023d8                LGS_UpdateStackData
+                0x08002404       0xa8 Src\lgs_bluetooth.o
+                0x08002404                LGS_UpdateStackData
  .text.LGS_BLE_UpdateDefaultSettings
-                0x08002480       0xa0 Src\lgs_bluetooth.o
-                0x08002480                LGS_BLE_UpdateDefaultSettings
+                0x080024ac       0xa0 Src\lgs_bluetooth.o
+                0x080024ac                LGS_BLE_UpdateDefaultSettings
  .text.LGS_SetDiscoverableMode
-                0x08002520       0xa4 Src\lgs_bluetooth.o
-                0x08002520                LGS_SetDiscoverableMode
+                0x0800254c       0xa4 Src\lgs_bluetooth.o
+                0x0800254c                LGS_SetDiscoverableMode
  .text.LGS_AddServices
-                0x080025c4      0x79c Src\lgs_bluetooth.o
-                0x080025c4                LGS_AddServices
+                0x080025f0      0x79c Src\lgs_bluetooth.o
+                0x080025f0                LGS_AddServices
  .text.LGS_BLE_Init
-                0x08002d60       0xd8 Src\lgs_bluetooth.o
-                0x08002d60                LGS_BLE_Init
+                0x08002d8c       0xd8 Src\lgs_bluetooth.o
+                0x08002d8c                LGS_BLE_Init
  .text.LGS_BLE_IndicateReadProcessReady
-                0x08002e38       0x50 Src\lgs_bluetooth.o
-                0x08002e38                LGS_BLE_IndicateReadProcessReady
+                0x08002e64       0x50 Src\lgs_bluetooth.o
+                0x08002e64                LGS_BLE_IndicateReadProcessReady
  .text.LGS_Process
-                0x08002e88       0xb4 Src\lgs_bluetooth.o
-                0x08002e88                LGS_Process
+                0x08002eb4       0xb4 Src\lgs_bluetooth.o
+                0x08002eb4                LGS_Process
  .text.LGS_BLE_Process
-                0x08002f3c        0xc Src\lgs_bluetooth.o
-                0x08002f3c                LGS_BLE_Process
+                0x08002f68        0xc Src\lgs_bluetooth.o
+                0x08002f68                LGS_BLE_Process
  .text.GAP_DisconnectionComplete_CB
-                0x08002f48       0x20 Src\lgs_bluetooth.o
-                0x08002f48                GAP_DisconnectionComplete_CB
+                0x08002f74       0x20 Src\lgs_bluetooth.o
+                0x08002f74                GAP_DisconnectionComplete_CB
  .text.Read_Request_CB
-                0x08002f68       0x14 Src\lgs_bluetooth.o
-                0x08002f68                Read_Request_CB
+                0x08002f94       0x14 Src\lgs_bluetooth.o
+                0x08002f94                Read_Request_CB
  .text.Write_Request_CB
-                0x08002f7c      0x10c Src\lgs_bluetooth.o
-                0x08002f7c                Write_Request_CB
+                0x08002fa8      0x114 Src\lgs_bluetooth.o
+                0x08002fa8                Write_Request_CB
  .text.LGS_UserNotify
-                0x08003088       0x7c Src\lgs_bluetooth.o
-                0x08003088                LGS_UserNotify
+                0x080030bc       0x7c Src\lgs_bluetooth.o
+                0x080030bc                LGS_UserNotify
+ .text.LGS_READ_CriticLevels
+                0x08003138       0x3c Src\lgs_datamanagement.o
+                0x08003138                LGS_READ_CriticLevels
+ .text.LGS_READ_SAVEINTERVAL
+                0x08003174       0x28 Src\lgs_datamanagement.o
+                0x08003174                LGS_READ_SAVEINTERVAL
  .text.LGS_DATAMANAGEMENT_ISPROCESSACTIVE
-                0x08003104        0xc Src\lgs_datamanagement.o
-                0x08003104                LGS_DATAMANAGEMENT_ISPROCESSACTIVE
- .text.LGS_DATAMANAGEMENT_ClearData
-                0x08003110       0x24 Src\lgs_datamanagement.o
-                0x08003110                LGS_DATAMANAGEMENT_ClearData
+                0x0800319c        0xc Src\lgs_datamanagement.o
+                0x0800319c                LGS_DATAMANAGEMENT_ISPROCESSACTIVE
  .text.LGS_DATAMANAGEMENT_StartReadProcess
-                0x08003134       0x2c Src\lgs_datamanagement.o
-                0x08003134                LGS_DATAMANAGEMENT_StartReadProcess
+                0x080031a8       0x2c Src\lgs_datamanagement.o
+                0x080031a8                LGS_DATAMANAGEMENT_StartReadProcess
  .text.LGS_DATAMANAGEMENT_ReadProcessFinished
-                0x08003160        0xc Src\lgs_datamanagement.o
-                0x08003160                LGS_DATAMANAGEMENT_ReadProcessFinished
+                0x080031d4        0xc Src\lgs_datamanagement.o
+                0x080031d4                LGS_DATAMANAGEMENT_ReadProcessFinished
  .text.readDataUint32
-                0x0800316c       0x1c Src\lgs_datamanagement.o
-                0x0800316c                readDataUint32
+                0x080031e0       0x1c Src\lgs_datamanagement.o
+                0x080031e0                readDataUint32
  .text.LGS_DATAMANAGEMENT_ReadNextDataElement
-                0x08003188       0x68 Src\lgs_datamanagement.o
-                0x08003188                LGS_DATAMANAGEMENT_ReadNextDataElement
+                0x080031fc       0x68 Src\lgs_datamanagement.o
+                0x080031fc                LGS_DATAMANAGEMENT_ReadNextDataElement
  .text.writeDataUint8
-                0x080031f0       0x2c Src\lgs_datamanagement.o
-                0x080031f0                writeDataUint8
+                0x08003264       0x2c Src\lgs_datamanagement.o
+                0x08003264                writeDataUint8
  .text.writeDataUint16
-                0x0800321c       0x30 Src\lgs_datamanagement.o
-                0x0800321c                writeDataUint16
+                0x08003290       0x30 Src\lgs_datamanagement.o
+                0x08003290                writeDataUint16
+ .text.LGS_DATAMANAGEMENT_ClearData
+                0x080032c0       0x38 Src\lgs_datamanagement.o
+                0x080032c0                LGS_DATAMANAGEMENT_ClearData
+ .text.LGS_SAVE_CriticLevels
+                0x080032f8       0x34 Src\lgs_datamanagement.o
+                0x080032f8                LGS_SAVE_CriticLevels
  .text.writeDataUint32
-                0x0800324c       0x30 Src\lgs_datamanagement.o
-                0x0800324c                writeDataUint32
- .text.LGS_DATAMANAGEMENT_Init
-                0x0800327c       0x6c Src\lgs_datamanagement.o
-                0x0800327c                LGS_DATAMANAGEMENT_Init
+                0x0800332c       0x30 Src\lgs_datamanagement.o
+                0x0800332c                writeDataUint32
+ .text.LGS_WRITE_SAVEINTERVAL
+                0x0800335c       0x24 Src\lgs_datamanagement.o
+                0x0800335c                LGS_WRITE_SAVEINTERVAL
  .text.WriteNewDataElement
-                0x080032e8       0x64 Src\lgs_datamanagement.o
-                0x080032e8                WriteNewDataElement
+                0x08003380       0x64 Src\lgs_datamanagement.o
+                0x08003380                WriteNewDataElement
  .text.LGS_DATAMANAGEMENT_Process
-                0x0800334c       0x48 Src\lgs_datamanagement.o
-                0x0800334c                LGS_DATAMANAGEMENT_Process
- .text.setDefaultValues
-                0x08003394       0x28 Src\main.o
-                0x08003394                setDefaultValues
+                0x080033e4       0x68 Src\lgs_datamanagement.o
+                0x080033e4                LGS_DATAMANAGEMENT_Process
+ .text.LGS_DATAMANAGEMENT_Init
+                0x0800344c       0xa0 Src\lgs_datamanagement.o
+                0x0800344c                LGS_DATAMANAGEMENT_Init
  .text.checkOutputActiveFlag
-                0x080033bc       0x4c Src\main.o
-                0x080033bc                checkOutputActiveFlag
+                0x080034ec       0x4c Src\main.o
+                0x080034ec                checkOutputActiveFlag
  .text.SystemClock_Config
-                0x08003408       0x78 Src\main.o
-                0x08003408                SystemClock_Config
+                0x08003538       0x78 Src\main.o
+                0x08003538                SystemClock_Config
  .text.startup.main
-                0x08003480       0xe8 Src\main.o
-                0x08003480                main
+                0x080035b0       0xe8 Src\main.o
+                0x080035b0                main
  .text.BSP_SPI1_SendRecv
-                0x08003568       0x28 Src\nucleo_l053r8_bus.o
-                0x08003568                BSP_SPI1_SendRecv
+                0x08003698       0x28 Src\nucleo_l053r8_bus.o
+                0x08003698                BSP_SPI1_SendRecv
  .text.BSP_GetTick
-                0x08003590        0x8 Src\nucleo_l053r8_bus.o
-                0x08003590                BSP_GetTick
+                0x080036c0        0x8 Src\nucleo_l053r8_bus.o
+                0x080036c0                BSP_GetTick
  .text.MX_SPI1_Init
-                0x08003598       0x38 Src\nucleo_l053r8_bus.o
-                0x08003598                MX_SPI1_Init
+                0x080036c8       0x38 Src\nucleo_l053r8_bus.o
+                0x080036c8                MX_SPI1_Init
  .text.BSP_SPI1_Init
-                0x080035d0       0x74 Src\nucleo_l053r8_bus.o
-                0x080035d0                BSP_SPI1_Init
+                0x08003700       0x74 Src\nucleo_l053r8_bus.o
+                0x08003700                BSP_SPI1_Init
  .text.BSP_LED_Init
-                0x08003644       0x44 Src\stm32l0_nucleo_l053r8.o
-                0x08003644                BSP_LED_Init
+                0x08003774       0x44 Src\stm32l0_nucleo_l053r8.o
+                0x08003774                BSP_LED_Init
  .text.BSP_LED_Toggle
-                0x08003688       0x10 Src\stm32l0_nucleo_l053r8.o
-                0x08003688                BSP_LED_Toggle
+                0x080037b8       0x10 Src\stm32l0_nucleo_l053r8.o
+                0x080037b8                BSP_LED_Toggle
  .text.HAL_EXTI_RegisterCallback
-                0x08003698        0xe Src\stm32l0xx_hal_exti.o
-                0x08003698                HAL_EXTI_RegisterCallback
+                0x080037c8        0xe Src\stm32l0xx_hal_exti.o
+                0x080037c8                HAL_EXTI_RegisterCallback
  .text.HAL_EXTI_GetHandle
-                0x080036a6        0xe Src\stm32l0xx_hal_exti.o
-                0x080036a6                HAL_EXTI_GetHandle
+                0x080037d6        0xe Src\stm32l0xx_hal_exti.o
+                0x080037d6                HAL_EXTI_GetHandle
  .text.HAL_EXTI_IRQHandler
-                0x080036b4       0x24 Src\stm32l0xx_hal_exti.o
-                0x080036b4                HAL_EXTI_IRQHandler
+                0x080037e4       0x24 Src\stm32l0xx_hal_exti.o
+                0x080037e4                HAL_EXTI_IRQHandler
  .text.HAL_MspInit
-                0x080036d8       0x1c Src\stm32l0xx_hal_msp.o
-                0x080036d8                HAL_MspInit
+                0x08003808       0x1c Src\stm32l0xx_hal_msp.o
+                0x08003808                HAL_MspInit
  .text.NMI_Handler
-                0x080036f4        0x2 Src\stm32l0xx_it.o
-                0x080036f4                NMI_Handler
+                0x08003824        0x2 Src\stm32l0xx_it.o
+                0x08003824                NMI_Handler
  .text.HardFault_Handler
-                0x080036f6        0x2 Src\stm32l0xx_it.o
-                0x080036f6                HardFault_Handler
+                0x08003826        0x2 Src\stm32l0xx_it.o
+                0x08003826                HardFault_Handler
  .text.SVC_Handler
-                0x080036f8        0x2 Src\stm32l0xx_it.o
-                0x080036f8                SVC_Handler
+                0x08003828        0x2 Src\stm32l0xx_it.o
+                0x08003828                SVC_Handler
  .text.PendSV_Handler
-                0x080036fa        0x2 Src\stm32l0xx_it.o
-                0x080036fa                PendSV_Handler
+                0x0800382a        0x2 Src\stm32l0xx_it.o
+                0x0800382a                PendSV_Handler
  .text.SysTick_Handler
-                0x080036fc        0x8 Src\stm32l0xx_it.o
-                0x080036fc                SysTick_Handler
+                0x0800382c        0x8 Src\stm32l0xx_it.o
+                0x0800382c                SysTick_Handler
  .text.EXTI0_1_IRQHandler
-                0x08003704       0x10 Src\stm32l0xx_it.o
-                0x08003704                EXTI0_1_IRQHandler
+                0x08003834       0x10 Src\stm32l0xx_it.o
+                0x08003834                EXTI0_1_IRQHandler
  .text.SystemInit
-                0x08003714       0x5c Src\system_stm32l0xx.o
-                0x08003714                SystemInit
+                0x08003844       0x5c Src\system_stm32l0xx.o
+                0x08003844                SystemInit
  .text.Reset_Handler
-                0x08003770       0x50 startup\startup_stm32l053xx.o
-                0x08003770                Reset_Handler
+                0x080038a0       0x50 startup\startup_stm32l053xx.o
+                0x080038a0                Reset_Handler
  .text.Default_Handler
-                0x080037c0        0x2 startup\startup_stm32l053xx.o
-                0x080037c0                TSC_IRQHandler
-                0x080037c0                ADC1_COMP_IRQHandler
-                0x080037c0                PVD_IRQHandler
-                0x080037c0                I2C1_IRQHandler
-                0x080037c0                RCC_CRS_IRQHandler
-                0x080037c0                SPI1_IRQHandler
-                0x080037c0                TIM6_DAC_IRQHandler
-                0x080037c0                EXTI2_3_IRQHandler
-                0x080037c0                I2C2_IRQHandler
-                0x080037c0                RTC_IRQHandler
-                0x080037c0                LCD_IRQHandler
-                0x080037c0                DMA1_Channel4_5_6_7_IRQHandler
-                0x080037c0                EXTI4_15_IRQHandler
-                0x080037c0                DMA1_Channel1_IRQHandler
-                0x080037c0                Default_Handler
-                0x080037c0                TIM22_IRQHandler
-                0x080037c0                USB_IRQHandler
-                0x080037c0                SPI2_IRQHandler
-                0x080037c0                TIM21_IRQHandler
-                0x080037c0                WWDG_IRQHandler
-                0x080037c0                TIM2_IRQHandler
-                0x080037c0                DMA1_Channel2_3_IRQHandler
-                0x080037c0                USART2_IRQHandler
-                0x080037c0                FLASH_IRQHandler
-                0x080037c0                USART1_IRQHandler
-                0x080037c0                RNG_LPUART1_IRQHandler
-                0x080037c0                LPTIM1_IRQHandler
- *fill*         0x080037c2        0x2 
+                0x080038f0        0x2 startup\startup_stm32l053xx.o
+                0x080038f0                TSC_IRQHandler
+                0x080038f0                ADC1_COMP_IRQHandler
+                0x080038f0                PVD_IRQHandler
+                0x080038f0                I2C1_IRQHandler
+                0x080038f0                RCC_CRS_IRQHandler
+                0x080038f0                SPI1_IRQHandler
+                0x080038f0                TIM6_DAC_IRQHandler
+                0x080038f0                EXTI2_3_IRQHandler
+                0x080038f0                I2C2_IRQHandler
+                0x080038f0                RTC_IRQHandler
+                0x080038f0                LCD_IRQHandler
+                0x080038f0                DMA1_Channel4_5_6_7_IRQHandler
+                0x080038f0                EXTI4_15_IRQHandler
+                0x080038f0                DMA1_Channel1_IRQHandler
+                0x080038f0                Default_Handler
+                0x080038f0                TIM22_IRQHandler
+                0x080038f0                USB_IRQHandler
+                0x080038f0                SPI2_IRQHandler
+                0x080038f0                TIM21_IRQHandler
+                0x080038f0                WWDG_IRQHandler
+                0x080038f0                TIM2_IRQHandler
+                0x080038f0                DMA1_Channel2_3_IRQHandler
+                0x080038f0                USART2_IRQHandler
+                0x080038f0                FLASH_IRQHandler
+                0x080038f0                USART1_IRQHandler
+                0x080038f0                RNG_LPUART1_IRQHandler
+                0x080038f0                LPTIM1_IRQHandler
+ *fill*         0x080038f2        0x2 
  .text.__libc_init_array
-                0x080037c4       0x48 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-init.o)
-                0x080037c4                __libc_init_array
- .text.memcpy   0x0800380c       0x12 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memcpy-stub.o)
-                0x0800380c                memcpy
- .text.memset   0x0800381e       0x10 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memset.o)
-                0x0800381e                memset
- *fill*         0x0800382e        0x2 
- .text.srand    0x08003830       0x5c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
-                0x08003830                srand
- .text.rand     0x0800388c       0x78 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
-                0x0800388c                rand
- .text.malloc   0x08003904       0x14 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-malloc.o)
-                0x08003904                malloc
+                0x080038f4       0x48 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-init.o)
+                0x080038f4                __libc_init_array
+ .text.memcpy   0x0800393c       0x12 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memcpy-stub.o)
+                0x0800393c                memcpy
+ .text.memset   0x0800394e       0x10 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memset.o)
+                0x0800394e                memset
+ *fill*         0x0800395e        0x2 
+ .text.srand    0x08003960       0x5c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
+                0x08003960                srand
+ .text.rand     0x080039bc       0x78 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
+                0x080039bc                rand
+ .text.malloc   0x08003a34       0x14 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-malloc.o)
+                0x08003a34                malloc
  .text._malloc_r
-                0x08003918       0xbc d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-nano-mallocr.o)
-                0x08003918                _malloc_r
- .text._sbrk_r  0x080039d4       0x24 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-sbrkr.o)
-                0x080039d4                _sbrk_r
+                0x08003a48       0xbc d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-nano-mallocr.o)
+                0x08003a48                _malloc_r
+ .text._sbrk_r  0x08003b04       0x24 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-sbrkr.o)
+                0x08003b04                _sbrk_r
  .text.__malloc_lock
-                0x080039f8        0x2 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
-                0x080039f8                __malloc_lock
+                0x08003b28        0x2 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
+                0x08003b28                __malloc_lock
  .text.__malloc_unlock
-                0x080039fa        0x2 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
-                0x080039fa                __malloc_unlock
- .text._sbrk    0x080039fc       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(sbrk.o)
-                0x080039fc                _sbrk
+                0x08003b2a        0x2 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
+                0x08003b2a                __malloc_unlock
+ .text._sbrk    0x08003b2c       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(sbrk.o)
+                0x08003b2c                _sbrk
  *(.glue_7)
- .glue_7        0x08003a1c        0x0 linker stubs
+ .glue_7        0x08003b4c        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x08003a1c        0x0 linker stubs
+ .glue_7t       0x08003b4c        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x08003a1c        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
+ .eh_frame      0x08003b4c        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
  *(.init)
- .init          0x08003a1c        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crti.o
-                0x08003a1c                _init
- .init          0x08003a20        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
+ .init          0x08003b4c        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crti.o
+                0x08003b4c                _init
+ .init          0x08003b50        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
  *(.fini)
- .fini          0x08003a28        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crti.o
-                0x08003a28                _fini
- .fini          0x08003a2c        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
-                0x08003a34                . = ALIGN (0x4)
-                0x08003a34                _etext = .
+ .fini          0x08003b58        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crti.o
+                0x08003b58                _fini
+ .fini          0x08003b5c        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
+                0x08003b64                . = ALIGN (0x4)
+                0x08003b64                _etext = .
 
-.vfp11_veneer   0x08003a34        0x0
- .vfp11_veneer  0x08003a34        0x0 linker stubs
+.vfp11_veneer   0x08003b64        0x0
+ .vfp11_veneer  0x08003b64        0x0 linker stubs
 
-.v4_bx          0x08003a34        0x0
- .v4_bx         0x08003a34        0x0 linker stubs
+.v4_bx          0x08003b64        0x0
+ .v4_bx         0x08003b64        0x0 linker stubs
 
-.iplt           0x08003a34        0x0
- .iplt          0x08003a34        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
+.iplt           0x08003b64        0x0
+ .iplt          0x08003b64        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
 
-.rodata         0x08003a34       0x28
-                0x08003a34                . = ALIGN (0x4)
+.rodata         0x08003b64       0x28
+                0x08003b64                . = ALIGN (0x4)
  *(.rodata)
- .rodata        0x08003a34        0xa Src\lgs_bluetooth.o
+ .rodata        0x08003b64        0xa Src\lgs_bluetooth.o
  *(.rodata*)
  .rodata.LGS_BLE_Init.str1.1
-                0x08003a3e        0x4 Src\lgs_bluetooth.o
+                0x08003b6e        0x4 Src\lgs_bluetooth.o
  .rodata.AHBPrescTable
-                0x08003a42       0x10 Src\system_stm32l0xx.o
-                0x08003a42                AHBPrescTable
+                0x08003b72       0x10 Src\system_stm32l0xx.o
+                0x08003b72                AHBPrescTable
  .rodata.PLLMulTable
-                0x08003a52        0x9 Src\system_stm32l0xx.o
-                0x08003a52                PLLMulTable
-                0x08003a5c                . = ALIGN (0x4)
- *fill*         0x08003a5b        0x1 
+                0x08003b82        0x9 Src\system_stm32l0xx.o
+                0x08003b82                PLLMulTable
+                0x08003b8c                . = ALIGN (0x4)
+ *fill*         0x08003b8b        0x1 
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-.ARM            0x08003a5c        0x8
-                0x08003a5c                __exidx_start = .
+.ARM            0x08003b8c        0x8
+                0x08003b8c                __exidx_start = .
  *(.ARM.exidx*)
- .ARM.exidx     0x08003a5c        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivmoddi4.o)
-                0x08003a64                __exidx_end = .
+ .ARM.exidx     0x08003b8c        0x8 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivmoddi4.o)
+                0x08003b94                __exidx_end = .
 
-.rel.dyn        0x08003a64        0x0
- .rel.iplt      0x08003a64        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
+.rel.dyn        0x08003b94        0x0
+ .rel.iplt      0x08003b94        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
 
-.preinit_array  0x08003a64        0x0
-                0x08003a64                PROVIDE (__preinit_array_start, .)
+.preinit_array  0x08003b94        0x0
+                0x08003b94                PROVIDE (__preinit_array_start, .)
  *(.preinit_array*)
-                0x08003a64                PROVIDE (__preinit_array_end, .)
+                0x08003b94                PROVIDE (__preinit_array_end, .)
 
-.init_array     0x08003a64        0x4
-                0x08003a64                PROVIDE (__init_array_start, .)
+.init_array     0x08003b94        0x4
+                0x08003b94                PROVIDE (__init_array_start, .)
  *(SORT(.init_array.*))
  *(.init_array*)
- .init_array    0x08003a64        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
-                0x08003a68                PROVIDE (__init_array_end, .)
+ .init_array    0x08003b94        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
+                0x08003b98                PROVIDE (__init_array_end, .)
 
-.fini_array     0x08003a68        0x4
+.fini_array     0x08003b98        0x4
                 [!provide]                PROVIDE (__fini_array_start, .)
  *(SORT(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x08003a68        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
+ .fini_array    0x08003b98        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
                 [!provide]                PROVIDE (__fini_array_end, .)
-                0x08003a6c                _sidata = LOADADDR (.data)
+                0x08003b9c                _sidata = LOADADDR (.data)
 
-.data           0x20000000       0x70 load address 0x08003a6c
+.data           0x20000000       0x70 load address 0x08003b9c
                 0x20000000                . = ALIGN (0x4)
                 0x20000000                _sdata = .
  *(.data)
@@ -1994,11 +2009,11 @@ LOAD d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-ato
                 0x20000070                . = ALIGN (0x4)
                 0x20000070                _edata = .
 
-.igot.plt       0x20000070        0x0 load address 0x08003adc
+.igot.plt       0x20000070        0x0 load address 0x08003c0c
  .igot.plt      0x20000070        0x0 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
                 0x20000070                . = ALIGN (0x4)
 
-.bss            0x20000070      0x540 load address 0x08003adc
+.bss            0x20000070      0x544 load address 0x08003c0c
                 0x20000070                _sbss = .
                 0x20000070                __bss_start__ = _sbss
  *(.bss)
@@ -2053,40 +2068,41 @@ LOAD d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-ato
                 0x200004b4                hciReadPktRxQueue
  COMMON         0x200004bc        0x8 Src\hci_tl_interface.o
                 0x200004bc                hexti0
- COMMON         0x200004c4       0x74 Src\lgs_bluetooth.o
+ COMMON         0x200004c4       0x76 Src\lgs_bluetooth.o
                 0x200004c4                bdaddr
                 0x200004ca                char_uuid
                 0x200004dc                connected
                 0x200004e0                m_indicatePaket
                 0x200004e4                m_environmentData
-                0x200004fc                service_uuid
-                0x2000050c                m_serviceHandles
- COMMON         0x20000538       0x1b Src\lgs_datamanagement.o
-                0x20000538                m_currentDataElementPosition
-                0x2000053a                m_dataElementToWrite
-                0x20000544                dataJoinUnion
-                0x20000548                m_currentDataElementPositionReadProcess
-                0x2000054a                m_dataElement
-                0x20000552                m_readProcessActive
- *fill*         0x20000553        0x1 
- COMMON         0x20000554       0x58 Src\nucleo_l053r8_bus.o
-                0x20000554                hspi1
- COMMON         0x200005ac        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-reent.o)
-                0x200005ac                errno
-                0x200005b0                . = ALIGN (0x4)
-                0x200005b0                _ebss = .
-                0x200005b0                __bss_end__ = _ebss
+                0x200004fe                service_uuid
+                0x2000050e                m_serviceHandles
+ *fill*         0x2000053a        0x2 
+ COMMON         0x2000053c       0x1b Src\lgs_datamanagement.o
+                0x2000053c                m_currentDataElementPosition
+                0x2000053e                m_dataElementToWrite
+                0x20000548                dataJoinUnion
+                0x2000054c                m_currentDataElementPositionReadProcess
+                0x2000054e                m_dataElement
+                0x20000556                m_readProcessActive
+ *fill*         0x20000557        0x1 
+ COMMON         0x20000558       0x58 Src\nucleo_l053r8_bus.o
+                0x20000558                hspi1
+ COMMON         0x200005b0        0x4 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-reent.o)
+                0x200005b0                errno
+                0x200005b4                . = ALIGN (0x4)
+                0x200005b4                _ebss = .
+                0x200005b4                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x200005b0      0x600 load address 0x08003adc
-                0x200005b0                . = ALIGN (0x4)
-                0x200005b0                PROVIDE (end, .)
+                0x200005b4      0x600 load address 0x08003c0c
+                0x200005b4                . = ALIGN (0x4)
+                0x200005b4                PROVIDE (end, .)
                 [!provide]                PROVIDE (_end, .)
-                0x200007b0                . = (. + _Min_Heap_Size)
- *fill*         0x200005b0      0x200 
-                0x20000bb0                . = (. + _Min_Stack_Size)
- *fill*         0x200007b0      0x400 
-                0x20000bb0                . = ALIGN (0x4)
+                0x200007b4                . = (. + _Min_Heap_Size)
+ *fill*         0x200005b4      0x200 
+                0x20000bb4                . = (. + _Min_Stack_Size)
+ *fill*         0x200007b4      0x400 
+                0x20000bb4                . = ALIGN (0x4)
 
 /DISCARD/
  libc.a(*)
@@ -2192,7 +2208,7 @@ LOAD d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-ato
                 0x00000820       0x1e d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
 OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
 
-.debug_info     0x00000000    0x1b259
+.debug_info     0x00000000    0x1b6cf
  .debug_info    0x00000000      0x865 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_info    0x00000865      0x9b5 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_info    0x0000121a      0x5b5 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2209,18 +2225,18 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_info    0x00011206     0x13aa Middlewares\X-CUBE-BLE1\Wireless\HCI_TL\Basic\hci_tl.o
  .debug_info    0x000125b0      0xfa6 Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_info    0x00013556     0x12ea Src\hci_tl_interface.o
- .debug_info    0x00014840     0x23b2 Src\lgs_bluetooth.o
- .debug_info    0x00016bf2      0x9d4 Src\lgs_datamanagement.o
- .debug_info    0x000175c6      0xafe Src\main.o
- .debug_info    0x000180c4      0xbeb Src\nucleo_l053r8_bus.o
- .debug_info    0x00018caf     0x1a80 Src\stm32l0_nucleo_l053r8.o
- .debug_info    0x0001a72f      0x2d2 Src\stm32l0xx_hal_exti.o
- .debug_info    0x0001aa01      0x25e Src\stm32l0xx_hal_msp.o
- .debug_info    0x0001ac5f      0x1f0 Src\stm32l0xx_it.o
- .debug_info    0x0001ae4f      0x398 Src\system_stm32l0xx.o
- .debug_info    0x0001b1e7       0x72 startup\startup_stm32l053xx.o
+ .debug_info    0x00014840     0x23bb Src\lgs_bluetooth.o
+ .debug_info    0x00016bfb      0xe3b Src\lgs_datamanagement.o
+ .debug_info    0x00017a36      0xb04 Src\main.o
+ .debug_info    0x0001853a      0xbeb Src\nucleo_l053r8_bus.o
+ .debug_info    0x00019125     0x1a80 Src\stm32l0_nucleo_l053r8.o
+ .debug_info    0x0001aba5      0x2d2 Src\stm32l0xx_hal_exti.o
+ .debug_info    0x0001ae77      0x25e Src\stm32l0xx_hal_msp.o
+ .debug_info    0x0001b0d5      0x1f0 Src\stm32l0xx_it.o
+ .debug_info    0x0001b2c5      0x398 Src\system_stm32l0xx.o
+ .debug_info    0x0001b65d       0x72 startup\startup_stm32l053xx.o
 
-.debug_abbrev   0x00000000     0x3b1e
+.debug_abbrev   0x00000000     0x3b7a
  .debug_abbrev  0x00000000      0x28c Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_abbrev  0x0000028c      0x266 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_abbrev  0x000004f2      0x28f Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2237,18 +2253,18 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_abbrev  0x00001f52      0x3db Middlewares\X-CUBE-BLE1\Wireless\HCI_TL\Basic\hci_tl.o
  .debug_abbrev  0x0000232d      0x282 Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_abbrev  0x000025af      0x2b0 Src\hci_tl_interface.o
- .debug_abbrev  0x0000285f      0x3b7 Src\lgs_bluetooth.o
- .debug_abbrev  0x00002c16      0x289 Src\lgs_datamanagement.o
- .debug_abbrev  0x00002e9f      0x234 Src\main.o
- .debug_abbrev  0x000030d3      0x26e Src\nucleo_l053r8_bus.o
- .debug_abbrev  0x00003341      0x35b Src\stm32l0_nucleo_l053r8.o
- .debug_abbrev  0x0000369c      0x165 Src\stm32l0xx_hal_exti.o
- .debug_abbrev  0x00003801       0xc9 Src\stm32l0xx_hal_msp.o
- .debug_abbrev  0x000038ca      0x134 Src\stm32l0xx_it.o
- .debug_abbrev  0x000039fe      0x10e Src\system_stm32l0xx.o
- .debug_abbrev  0x00003b0c       0x12 startup\startup_stm32l053xx.o
+ .debug_abbrev  0x0000285f      0x3c4 Src\lgs_bluetooth.o
+ .debug_abbrev  0x00002c23      0x2f0 Src\lgs_datamanagement.o
+ .debug_abbrev  0x00002f13      0x21c Src\main.o
+ .debug_abbrev  0x0000312f      0x26e Src\nucleo_l053r8_bus.o
+ .debug_abbrev  0x0000339d      0x35b Src\stm32l0_nucleo_l053r8.o
+ .debug_abbrev  0x000036f8      0x165 Src\stm32l0xx_hal_exti.o
+ .debug_abbrev  0x0000385d       0xc9 Src\stm32l0xx_hal_msp.o
+ .debug_abbrev  0x00003926      0x134 Src\stm32l0xx_it.o
+ .debug_abbrev  0x00003a5a      0x10e Src\system_stm32l0xx.o
+ .debug_abbrev  0x00003b68       0x12 startup\startup_stm32l053xx.o
 
-.debug_loc      0x00000000     0x9e39
+.debug_loc      0x00000000     0xa036
  .debug_loc     0x00000000      0x13d Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_loc     0x0000013d      0x3ed Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_loc     0x0000052a      0x1aa Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2265,14 +2281,14 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_loc     0x000085ee      0x491 Middlewares\X-CUBE-BLE1\Wireless\HCI_TL\Basic\hci_tl.o
  .debug_loc     0x00008a7f      0x119 Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_loc     0x00008b98      0x16e Src\hci_tl_interface.o
- .debug_loc     0x00008d06      0x6f0 Src\lgs_bluetooth.o
- .debug_loc     0x000093f6      0x38c Src\lgs_datamanagement.o
- .debug_loc     0x00009782      0x1ec Src\nucleo_l053r8_bus.o
- .debug_loc     0x0000996e      0x277 Src\stm32l0_nucleo_l053r8.o
- .debug_loc     0x00009be5       0xf9 Src\stm32l0xx_hal_exti.o
- .debug_loc     0x00009cde      0x15b Src\system_stm32l0xx.o
+ .debug_loc     0x00008d06      0x719 Src\lgs_bluetooth.o
+ .debug_loc     0x0000941f      0x560 Src\lgs_datamanagement.o
+ .debug_loc     0x0000997f      0x1ec Src\nucleo_l053r8_bus.o
+ .debug_loc     0x00009b6b      0x277 Src\stm32l0_nucleo_l053r8.o
+ .debug_loc     0x00009de2       0xf9 Src\stm32l0xx_hal_exti.o
+ .debug_loc     0x00009edb      0x15b Src\system_stm32l0xx.o
 
-.debug_aranges  0x00000000      0xe38
+.debug_aranges  0x00000000      0xe60
  .debug_aranges
                 0x00000000       0xf0 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_aranges
@@ -2308,25 +2324,25 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_aranges
                 0x00000b10       0x98 Src\lgs_bluetooth.o
  .debug_aranges
-                0x00000ba8       0x88 Src\lgs_datamanagement.o
+                0x00000ba8       0xb8 Src\lgs_datamanagement.o
  .debug_aranges
-                0x00000c30       0x40 Src\main.o
+                0x00000c60       0x38 Src\main.o
  .debug_aranges
-                0x00000c70       0x50 Src\nucleo_l053r8_bus.o
+                0x00000c98       0x50 Src\nucleo_l053r8_bus.o
  .debug_aranges
-                0x00000cc0       0xa0 Src\stm32l0_nucleo_l053r8.o
+                0x00000ce8       0xa0 Src\stm32l0_nucleo_l053r8.o
  .debug_aranges
-                0x00000d60       0x30 Src\stm32l0xx_hal_exti.o
+                0x00000d88       0x30 Src\stm32l0xx_hal_exti.o
  .debug_aranges
-                0x00000d90       0x20 Src\stm32l0xx_hal_msp.o
+                0x00000db8       0x20 Src\stm32l0xx_hal_msp.o
  .debug_aranges
-                0x00000db0       0x38 Src\stm32l0xx_it.o
+                0x00000dd8       0x38 Src\stm32l0xx_it.o
  .debug_aranges
-                0x00000de8       0x28 Src\system_stm32l0xx.o
+                0x00000e10       0x28 Src\system_stm32l0xx.o
  .debug_aranges
-                0x00000e10       0x28 startup\startup_stm32l053xx.o
+                0x00000e38       0x28 startup\startup_stm32l053xx.o
 
-.debug_ranges   0x00000000     0x1170
+.debug_ranges   0x00000000     0x11e0
  .debug_ranges  0x00000000       0xe0 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_ranges  0x000000e0      0x138 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_ranges  0x00000218       0x68 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2344,17 +2360,17 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_ranges  0x00000c30       0x68 Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_ranges  0x00000c98       0x70 Src\hci_tl_interface.o
  .debug_ranges  0x00000d08       0xe8 Src\lgs_bluetooth.o
- .debug_ranges  0x00000df0       0x90 Src\lgs_datamanagement.o
- .debug_ranges  0x00000e80       0xc8 Src\main.o
- .debug_ranges  0x00000f48       0x58 Src\nucleo_l053r8_bus.o
- .debug_ranges  0x00000fa0      0x140 Src\stm32l0_nucleo_l053r8.o
- .debug_ranges  0x000010e0       0x20 Src\stm32l0xx_hal_exti.o
- .debug_ranges  0x00001100       0x10 Src\stm32l0xx_hal_msp.o
- .debug_ranges  0x00001110       0x28 Src\stm32l0xx_it.o
- .debug_ranges  0x00001138       0x18 Src\system_stm32l0xx.o
- .debug_ranges  0x00001150       0x20 startup\startup_stm32l053xx.o
+ .debug_ranges  0x00000df0      0x108 Src\lgs_datamanagement.o
+ .debug_ranges  0x00000ef8       0xc0 Src\main.o
+ .debug_ranges  0x00000fb8       0x58 Src\nucleo_l053r8_bus.o
+ .debug_ranges  0x00001010      0x140 Src\stm32l0_nucleo_l053r8.o
+ .debug_ranges  0x00001150       0x20 Src\stm32l0xx_hal_exti.o
+ .debug_ranges  0x00001170       0x10 Src\stm32l0xx_hal_msp.o
+ .debug_ranges  0x00001180       0x28 Src\stm32l0xx_it.o
+ .debug_ranges  0x000011a8       0x18 Src\system_stm32l0xx.o
+ .debug_ranges  0x000011c0       0x20 startup\startup_stm32l053xx.o
 
-.debug_line     0x00000000     0x8d2c
+.debug_line     0x00000000     0x8df7
  .debug_line    0x00000000      0x52b Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_line    0x0000052b      0x508 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_line    0x00000a33      0x4f8 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2371,18 +2387,18 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_line    0x00005bcb      0x5df Middlewares\X-CUBE-BLE1\Wireless\HCI_TL\Basic\hci_tl.o
  .debug_line    0x000061aa      0x54f Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_line    0x000066f9      0x4b5 Src\hci_tl_interface.o
- .debug_line    0x00006bae      0x735 Src\lgs_bluetooth.o
- .debug_line    0x000072e3      0x3ef Src\lgs_datamanagement.o
- .debug_line    0x000076d2      0x389 Src\main.o
- .debug_line    0x00007a5b      0x354 Src\nucleo_l053r8_bus.o
- .debug_line    0x00007daf      0x528 Src\stm32l0_nucleo_l053r8.o
- .debug_line    0x000082d7      0x291 Src\stm32l0xx_hal_exti.o
- .debug_line    0x00008568      0x220 Src\stm32l0xx_hal_msp.o
- .debug_line    0x00008788      0x257 Src\stm32l0xx_it.o
- .debug_line    0x000089df      0x2ca Src\system_stm32l0xx.o
- .debug_line    0x00008ca9       0x83 startup\startup_stm32l053xx.o
+ .debug_line    0x00006bae      0x738 Src\lgs_bluetooth.o
+ .debug_line    0x000072e6      0x4d5 Src\lgs_datamanagement.o
+ .debug_line    0x000077bb      0x36b Src\main.o
+ .debug_line    0x00007b26      0x354 Src\nucleo_l053r8_bus.o
+ .debug_line    0x00007e7a      0x528 Src\stm32l0_nucleo_l053r8.o
+ .debug_line    0x000083a2      0x291 Src\stm32l0xx_hal_exti.o
+ .debug_line    0x00008633      0x220 Src\stm32l0xx_hal_msp.o
+ .debug_line    0x00008853      0x257 Src\stm32l0xx_it.o
+ .debug_line    0x00008aaa      0x2ca Src\system_stm32l0xx.o
+ .debug_line    0x00008d74       0x83 startup\startup_stm32l053xx.o
 
-.debug_str      0x00000000     0x65bb
+.debug_str      0x00000000     0x664a
  .debug_str     0x00000000      0x7ac Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
                                 0x803 (size before relaxing)
  .debug_str     0x000007ac      0x31b Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
@@ -2415,23 +2431,23 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
                                 0x7d1 (size before relaxing)
  .debug_str     0x00005387      0x167 Src\hci_tl_interface.o
                                 0xb5a (size before relaxing)
- .debug_str     0x000054ee      0x827 Src\lgs_bluetooth.o
-                               0x12a9 (size before relaxing)
- .debug_str     0x00005d15      0x223 Src\lgs_datamanagement.o
-                                0x6dc (size before relaxing)
- .debug_str     0x00005f38       0x68 Src\main.o
-                                0x9aa (size before relaxing)
- .debug_str     0x00005fa0       0x8c Src\nucleo_l053r8_bus.o
+ .debug_str     0x000054ee      0x85f Src\lgs_bluetooth.o
+                               0x12e1 (size before relaxing)
+ .debug_str     0x00005d4d      0x28b Src\lgs_datamanagement.o
+                                0x784 (size before relaxing)
+ .debug_str     0x00005fd8       0x57 Src\main.o
+                                0x9e7 (size before relaxing)
+ .debug_str     0x0000602f       0x8c Src\nucleo_l053r8_bus.o
                                 0x843 (size before relaxing)
- .debug_str     0x0000602c      0x435 Src\stm32l0_nucleo_l053r8.o
+ .debug_str     0x000060bb      0x435 Src\stm32l0_nucleo_l053r8.o
                                0x10b5 (size before relaxing)
- .debug_str     0x00006461       0x7f Src\stm32l0xx_hal_exti.o
+ .debug_str     0x000064f0       0x7f Src\stm32l0xx_hal_exti.o
                                 0x312 (size before relaxing)
- .debug_str     0x000064e0       0x1b Src\stm32l0xx_hal_msp.o
+ .debug_str     0x0000656f       0x1b Src\stm32l0xx_hal_msp.o
                                 0x292 (size before relaxing)
- .debug_str     0x000064fb       0x72 Src\stm32l0xx_it.o
+ .debug_str     0x0000658a       0x72 Src\stm32l0xx_it.o
                                 0x28d (size before relaxing)
- .debug_str     0x0000656d       0x4e Src\system_stm32l0xx.o
+ .debug_str     0x000065fc       0x4e Src\system_stm32l0xx.o
                                 0x2f6 (size before relaxing)
 
 .comment        0x00000000       0x7c
@@ -2462,7 +2478,7 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .comment       0x0000007c       0x7d Src\stm32l0xx_it.o
  .comment       0x0000007c       0x7d Src\system_stm32l0xx.o
 
-.debug_frame    0x00000000     0x2a54
+.debug_frame    0x00000000     0x2ae0
  .debug_frame   0x00000000      0x1f8 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal.o
  .debug_frame   0x000001f8      0x11c Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_cortex.o
  .debug_frame   0x00000314      0x128 Drivers\STM32L0xx_HAL_Driver\stm32l0xx_hal_flash.o
@@ -2479,25 +2495,25 @@ OUTPUT(SensorDemo_BLESensor-App.elf elf32-littlearm)
  .debug_frame   0x00001e5c       0xb4 Middlewares\X-CUBE-BLE1\Wireless\HCI_TL\Basic\hci_tl.o
  .debug_frame   0x00001f10       0xe8 Middlewares\X-CUBE-BLE1\Wireless\Utils\ble_list.o
  .debug_frame   0x00001ff8       0xd8 Src\hci_tl_interface.o
- .debug_frame   0x000020d0      0x1b0 Src\lgs_bluetooth.o
- .debug_frame   0x00002280      0x150 Src\lgs_datamanagement.o
- .debug_frame   0x000023d0       0x7c Src\main.o
- .debug_frame   0x0000244c       0xc4 Src\nucleo_l053r8_bus.o
- .debug_frame   0x00002510      0x1a8 Src\stm32l0_nucleo_l053r8.o
- .debug_frame   0x000026b8       0x48 Src\stm32l0xx_hal_exti.o
- .debug_frame   0x00002700       0x20 Src\stm32l0xx_hal_msp.o
- .debug_frame   0x00002720       0x80 Src\stm32l0xx_it.o
- .debug_frame   0x000027a0       0x3c Src\system_stm32l0xx.o
- .debug_frame   0x000027dc       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-init.o)
- .debug_frame   0x00002808       0x28 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memcpy-stub.o)
- .debug_frame   0x00002830       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memset.o)
- .debug_frame   0x00002850       0x44 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
- .debug_frame   0x00002894       0x40 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-malloc.o)
- .debug_frame   0x000028d4       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-nano-mallocr.o)
- .debug_frame   0x00002900       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-sbrkr.o)
- .debug_frame   0x0000292c       0x30 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
- .debug_frame   0x0000295c       0x48 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-reent.o)
- .debug_frame   0x000029a4       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivsi3.o)
- .debug_frame   0x000029c4       0x34 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_muldi3.o)
- .debug_frame   0x000029f8       0x3c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivmoddi4.o)
- .debug_frame   0x00002a34       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(sbrk.o)
+ .debug_frame   0x000020d0      0x1bc Src\lgs_bluetooth.o
+ .debug_frame   0x0000228c      0x1e0 Src\lgs_datamanagement.o
+ .debug_frame   0x0000246c       0x6c Src\main.o
+ .debug_frame   0x000024d8       0xc4 Src\nucleo_l053r8_bus.o
+ .debug_frame   0x0000259c      0x1a8 Src\stm32l0_nucleo_l053r8.o
+ .debug_frame   0x00002744       0x48 Src\stm32l0xx_hal_exti.o
+ .debug_frame   0x0000278c       0x20 Src\stm32l0xx_hal_msp.o
+ .debug_frame   0x000027ac       0x80 Src\stm32l0xx_it.o
+ .debug_frame   0x0000282c       0x3c Src\system_stm32l0xx.o
+ .debug_frame   0x00002868       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-init.o)
+ .debug_frame   0x00002894       0x28 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memcpy-stub.o)
+ .debug_frame   0x000028bc       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-memset.o)
+ .debug_frame   0x000028dc       0x44 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-rand.o)
+ .debug_frame   0x00002920       0x40 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-malloc.o)
+ .debug_frame   0x00002960       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-nano-mallocr.o)
+ .debug_frame   0x0000298c       0x2c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-sbrkr.o)
+ .debug_frame   0x000029b8       0x30 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-mlock.o)
+ .debug_frame   0x000029e8       0x48 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libc_nano.a(lib_a-reent.o)
+ .debug_frame   0x00002a30       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivsi3.o)
+ .debug_frame   0x00002a50       0x34 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_muldi3.o)
+ .debug_frame   0x00002a84       0x3c d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivmoddi4.o)
+ .debug_frame   0x00002ac0       0x20 d:/arm_toolchain/truestudio for stm32 9.1.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(sbrk.o)

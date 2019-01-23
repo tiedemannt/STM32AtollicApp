@@ -16,6 +16,7 @@
 
 #define DATAMANAGEMENT_INTERVAL_TEST 		10000U			//Test: Alle 10s Wert speichern
 #define DATAMANAGEMENT_INTERVAL_10PERHOUR 	360000U			//Alle 6min = 10/h
+#define DATAMANAGEMENT_INTERVAL_60PERHOUR	60000U
 
 
 /**
@@ -34,14 +35,20 @@ typedef struct
 /*
  * Public Functions
  */
-void LGS_DATAMANAGEMENT_Init(uint32_t estimatedSaveInterval);
+void LGS_DATAMANAGEMENT_Init();
 void LGS_DATAMANAGEMENT_ClearData(void);
 void LGS_DATAMANAGEMENT_Process(void);
 
-//Funktionen für Lesen
+//Funktionen für Datenübertragung von Messwerten
 void 			LGS_DATAMANAGEMENT_StartReadProcess(void);
 void 			LGS_DATAMANAGEMENT_ReadProcessFinished(void);
 s_dataElement* 	LGS_DATAMANAGEMENT_ReadNextDataElement(void);
 uint8_t			LGS_DATAMANAGEMENT_ISPROCESSACTIVE(void);
+
+//Einstellungen EEPROM
+void			LGS_SAVE_CriticLevels(void);
+void			LGS_READ_CriticLevels(void);
+void			LGS_READ_SAVEINTERVAL(void);
+void			LGS_WRITE_SAVEINTERVAL(void);
 
 #endif /* LGS_DATAMANAGEMENT_H_ */

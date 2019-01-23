@@ -310,7 +310,7 @@ void LGS_Process(void)
 	if (connected) //Besteht eine Verbindung zu einem Smartphone?
 	{
 		//Mindest-Delay abgelaufen?
-		if((HAL_GetTick() - m_startTicks) > (((uint32_t)m_environmentData.m_repRateBT) * 1000U))
+		if((HAL_GetTick() - m_startTicks) > (((uint32_t)LGS_CYCLIC_SEND_INTERVAL_DEFAULT) * 1000U))
 		{
 			//Update verfügbar?
 			if(m_environmentData.m_isUpdateAvailable)
@@ -1246,11 +1246,12 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 		if(m_serviceHandles.m_configurationsRepRateHandle == (handle - 1))
 		{
 			uint16_t receivedRepRate = *((uint16_t*)data);
-			if((receivedRepRate <= LGS_CYCLIC_SEND_INTERVAL_MAX)
-					&& (receivedRepRate >= LGS_CYCLIC_SEND_INTERVAL_MIN))
+			if((receivedRepRate <= LGS_CYCLIC_SAVE_INTERVAL_MAX)
+					&& (receivedRepRate >= LGS_CYCLIC_SAVE_INTERVAL_MIN))
 			{
 				//OK
 				m_environmentData.m_repRateBT = receivedRepRate;
+				m_environmentData.m_isNewSaveIntervalAvailable = 1U;
 			}
 			else
 			{
@@ -1266,6 +1267,7 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				//OK
 				m_environmentData.m_criticTemperature = receivedCritTemp;
+				m_environmentData.m_isNewCriticDataAvailable = 1U;
 			}
 			else
 			{
@@ -1281,6 +1283,7 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				//OK
 				m_environmentData.m_criticVOC = receivedCritVOC;
+				m_environmentData.m_isNewCriticDataAvailable = 1U;
 			}
 			else
 			{
@@ -1296,6 +1299,7 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				//OK
 				m_environmentData.m_criticCo2 = receivedCritCO2;
+				m_environmentData.m_isNewCriticDataAvailable = 1U;
 			}
 			else
 			{
@@ -1311,6 +1315,7 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				//OK
 				m_environmentData.m_criticHumidity = receivedCritHumidity;
+				m_environmentData.m_isNewCriticDataAvailable = 1U;
 			}
 			else
 			{
@@ -1326,6 +1331,7 @@ void Write_Request_CB(uint16_t handle, uint8_t data_length, uint8_t* data)
 			{
 				//OK
 				m_environmentData.m_criticPressure = receivedCritPressure;
+				m_environmentData.m_isNewCriticDataAvailable = 1U;
 			}
 			else
 			{

@@ -30,6 +30,11 @@ typedef uint8_t BOOL;
 #define EEPROM_POSITION_EEPROMINITIALIZED	0UL	//1 Byte Länge (Adr. 0)
 #define EEPROM_POSITION_SAVEINTERVAL		4UL	//4 Byte Länge (Adr. 4,5,6,7)
 #define EEPROM_POSITION_CURRENTDATAELEMENT	8UL	//2 Byte Länge (Adr. 8,9)
+#define EEPROM_POSITION_CRITICTEMP			12UL//1 Byte Länge
+#define EEPROM_POSITION_CRITICVOC			16UL//2 Byte Länge
+#define EEPROM_POSITION_CRITICCO2			20UL//2 Byte Länge
+#define EEPROM_POSITION_CRITICHUMIDITY		24UL//1 Byte Länge
+#define EEPROM_POSITION_CRITICPRESSURE		28UL//2 Byte Länge
 //Adressen 7-20 -> Frei; Reserve
 #define EEPROM_POSITION_DATASTART			60UL	//Ab Position 60
 #define EEPROM_POSITION_DATAEND				1976UL	//Bis inkl. Position 1979 (1976: letztes adressiertes WORD)
@@ -40,10 +45,12 @@ typedef uint8_t BOOL;
  */
 
 //Hilfsfunktionen (Private)
+int8_t	  readDataInt8(uint32_t Position);
 uint8_t   readDataUint8(uint32_t Position);
 uint16_t  readDataUint16(uint32_t Position);
 uint32_t  readDataUint32(uint32_t Position);
 
+void 	  writeDataInt8(int8_t data, uint32_t Position);
 void	  writeDataUint8(uint8_t data, uint32_t Position);
 void	  writeDataUint16(uint16_t data, uint32_t Position);
 void	  writeDataUint32(uint32_t data, uint32_t Position);
@@ -84,31 +91,76 @@ union dataUnion
  *   -> Gibt Zeit in [1]ms an, nach der ein Element gespeichert wird
  *   -> Ändert sich der Wert, wird das EEPROM resetted
  */
-void LGS_DATAMANAGEMENT_Init(uint32_t estimatedSaveInterval)
+void LGS_DATAMANAGEMENT_Init()
 {
 	HAL_FLASHEx_DATAEEPROM_EnableFixedTimeProgram();	//Nicht sicher ob notwendig?
 
 	//Gleiche SaveInterval und Initialized Flag mit dem gespeicherten Interval ab:
-	if((readDataUint32(EEPROM_POSITION_SAVEINTERVAL) != estimatedSaveInterval) //Anderes Interval
-			|| (readDataUint8(EEPROM_POSITION_EEPROMINITIALIZED) == 0U))	   //Noch nicht initialisiert
+	if(readDataUint8(EEPROM_POSITION_EEPROMINITIALIZED) == 0U)	   //Noch nicht initialisiert
 	{
 		//Saveinterval nicht gleich oder noch nicht initialisiert, EEPROM Reset
-		LGS_DATAMANAGEMENT_ClearData();
+		LGS_DATAMANAGEMENT_ClearData(); //Messdaten löschen
 
 		//Konfigurationswerte speichern:
 		writeDataUint8(1U, EEPROM_POSITION_EEPROMINITIALIZED); //Initialisiert Flag
-		writeDataUint32(estimatedSaveInterval, EEPROM_POSITION_SAVEINTERVAL); //Saveinterval
+
+		writeDataUint32(DATAMANAGEMENT_INTERVAL_10PERHOUR, EEPROM_POSITION_SAVEINTERVAL); //Saveinterval
+		m_saveInterval = DATAMANAGEMENT_INTERVAL_10PERHOUR;
+
+		writeDataInt8(LGS_DEFAULT_CRITIC_TEMPERATURE, EEPROM_POSITION_CRITICTEMP); //Critic Temperature
+		writeDataUint16(LGS_DEFAULT_CRITIC_VOC, EEPROM_POSITION_CRITICVOC); //Critic VOC
+		writeDataUint16(LGS_DEFAULT_CRITIC_CO2, EEPROM_POSITION_CRITICCO2); //Critic CO2
+		writeDataUint8(LGS_DEFAULT_CRITIC_HUMIDITY, EEPROM_POSITION_CRITICHUMIDITY); //Critic Humidity
+		writeDataUint16(LGS_DEFAULT_CRITIC_PRESSURE, EEPROM_POSITION_CRITICPRESSURE); //Critic Pressure
+
+
 		writeDataUint16(0U, EEPROM_POSITION_CURRENTDATAELEMENT); //CurrentDataElement - 0
 		m_currentDataElementPosition = 0UL;						 //CurrentDataElement - 0
+
+
 	}
 	else
 	{
 		m_currentDataElementPosition = readDataUint16(EEPROM_POSITION_CURRENTDATAELEMENT);
+		LGS_READ_SAVEINTERVAL();
 	}
 
 	m_readProcessActive = FALSE;
 	m_startTicksSaveData = 0U;
-	m_saveInterval = estimatedSaveInterval;
+	m_environmentData.m_isNewCriticDataAvailable = 0U;
+}
+
+/**
+ * Laden/Speichern der Schwellwerte
+ */
+void	LGS_READ_CriticLevels(void)
+{
+	m_environmentData.m_criticTemperature = readDataInt8(EEPROM_POSITION_CRITICTEMP);
+	m_environmentData.m_criticVOC = readDataUint16(EEPROM_POSITION_CRITICVOC);
+	m_environmentData.m_criticCo2 = readDataUint16(EEPROM_POSITION_CRITICCO2);
+	m_environmentData.m_criticHumidity = readDataUint8(EEPROM_POSITION_CRITICHUMIDITY);
+	m_environmentData.m_criticPressure = readDataUint16(EEPROM_POSITION_CRITICPRESSURE);
+}
+void	LGS_SAVE_CriticLevels(void)
+{
+	writeDataInt8(m_environmentData.m_criticTemperature, EEPROM_POSITION_CRITICTEMP); //Critic Temperature
+	writeDataUint16(m_environmentData.m_criticVOC, EEPROM_POSITION_CRITICVOC); //Critic VOC
+	writeDataUint16(m_environmentData.m_criticCo2, EEPROM_POSITION_CRITICCO2); //Critic CO2
+	writeDataUint8(m_environmentData.m_criticHumidity, EEPROM_POSITION_CRITICHUMIDITY); //Critic Humidity
+	writeDataUint16(m_environmentData.m_criticPressure, EEPROM_POSITION_CRITICPRESSURE); //Critic Pressure
+}
+/**
+ * Laden/Speichern des Speicherintervalls
+ */
+void LGS_READ_SAVEINTERVAL(void)
+{
+	m_saveInterval = readDataUint32(EEPROM_POSITION_SAVEINTERVAL);
+	m_environmentData.m_repRateBT = (uint16_t)(m_saveInterval/60000U);
+}
+void LGS_WRITE_SAVEINTERVAL(void)
+{
+	m_saveInterval = ((uint32_t)m_environmentData.m_repRateBT)*60000U;
+	writeDataUint32(m_saveInterval, EEPROM_POSITION_SAVEINTERVAL);
 }
 
 /**
@@ -128,6 +180,19 @@ void LGS_DATAMANAGEMENT_Process(void)
 		WriteNewDataElement();
 		m_startTicksSaveData = HAL_GetTick();
 	}
+
+	if(m_environmentData.m_isNewCriticDataAvailable)
+	{
+		m_environmentData.m_isNewCriticDataAvailable = 0U;
+		LGS_SAVE_CriticLevels();
+	}
+
+	if(m_environmentData.m_isNewSaveIntervalAvailable)
+	{
+		m_environmentData.m_isNewSaveIntervalAvailable = 0U;
+		LGS_WRITE_SAVEINTERVAL();
+		LGS_DATAMANAGEMENT_ClearData(); //Messdaten löschen
+	}
 }
 
 /*
@@ -141,15 +206,18 @@ uint8_t LGS_DATAMANAGEMENT_ISPROCESSACTIVE(void)
 
 /*
  * ClearData Funktion
- * -> Löscht alle Daten aus dem EEPROM
+ * -> Löscht alle Messdaten aus dem EEPROM
  */
 void LGS_DATAMANAGEMENT_ClearData(void)
 {
-	for(uint32_t pos = 0U; pos <= (DATA_EEPROM_END - DATA_EEPROM_BASE); pos = pos + 4)
+	for(uint32_t pos = 0U; pos <= (EEPROM_POSITION_DATAEND - EEPROM_POSITION_DATASTART); pos = pos + 4)
 	{
 		HAL_FLASHEx_DATAEEPROM_Unlock();
-		(void)HAL_FLASHEx_DATAEEPROM_Erase(DATA_EEPROM_BASE + pos);
+		(void)HAL_FLASHEx_DATAEEPROM_Erase(DATA_EEPROM_BASE + EEPROM_POSITION_DATASTART + pos);
 		HAL_FLASHEx_DATAEEPROM_Lock();
+
+		writeDataUint16(0U, EEPROM_POSITION_CURRENTDATAELEMENT); //CurrentDataElement - 0
+		m_currentDataElementPosition = 0UL;						 //CurrentDataElement - 0
 	}
 }
 
@@ -359,6 +427,30 @@ void writeDataUint32(uint32_t data, uint32_t Position)
 			(void)HAL_FLASHEx_DATAEEPROM_Lock();
 		}
 	}
+}
+
+/**
+ * INT8 - Hilfsfunktionen
+ */
+int8_t	  readDataInt8(uint32_t Position)
+{
+	union i8adapter
+	{
+		uint8_t u8;
+		int8_t  i8;
+	}adapter;
+	adapter.u8 = readDataUint8(Position);
+	return adapter.i8;
+}
+void 	  writeDataInt8(int8_t data, uint32_t Position)
+{
+	union i8adapter
+	{
+		uint8_t u8;
+		int8_t  i8;
+	}adapter;
+	adapter.i8 = data;
+	writeDataUint8(adapter.u8, Position);
 }
 
 
